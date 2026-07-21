@@ -104,7 +104,7 @@ function FlowDemo() {
         {/* Export */}
         <div className="rounded-2xl border border-line bg-surface-1/80 p-4 shadow-card backdrop-blur animate-float [animation-delay:1200ms]">
           <div className="flex items-center gap-2 text-xs font-semibold text-emerald-300">
-            <Download className="h-4 w-4" /> Export 4K
+            <Download className="h-4 w-4" /> Exportar 4K
           </div>
           <div className="mx-auto mt-3 h-[72px] w-11 rounded-lg border border-line bg-gradient-to-b from-violet-900/60 to-fuchsia-900/40 p-1">
             <div className="h-2 w-full rounded-sm bg-white/15" />
@@ -221,14 +221,14 @@ export default function LandingPage() {
               >
                 Editar meu primeiro vídeo grátis <ArrowRight className="h-4 w-4" aria-hidden />
               </Link>
-              <a
-                href="#recursos"
-                className="inline-flex h-12 items-center rounded-xl border border-line px-7 text-base font-medium text-zinc-300 transition-colors hover:border-violet-500/50 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
+              <Link
+                href="/entrar?demo=1"
+                className="inline-flex h-12 items-center gap-2 rounded-xl border border-line px-7 text-base font-medium text-zinc-300 transition-colors hover:border-violet-500/50 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
               >
-                Ver recursos
-              </a>
+                Ver demonstração
+              </Link>
             </div>
-            <p className="mt-4 text-xs text-zinc-600">Grátis e sem limites · sem cartão de crédito</p>
+            <p className="mt-4 text-xs text-zinc-600">Grátis e sem limites · sem cartão de crédito · sem instalar nada</p>
           </div>
           <FlowDemo />
         </section>
