@@ -10,8 +10,8 @@
 import { Eraser, Eye, Sparkle, Wand2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/store/toast";
-import { applySkinSmooth, bronzeSkinCanvas, glowSkinCanvas, matteSkinCanvas, portraitRetouch, type LiquifyMode } from "@/lib/photo-engine";
-import { getMaskCanvas, usePhotoEditorStore, type ToolId } from "@/store/photo-editor";
+import { applySkinSmooth, bronzeSkinCanvas, glowSkinCanvas, matteSkinCanvas, portraitRetouch } from "@/lib/photo-engine";
+import { getMaskCanvas, usePhotoEditorStore, type LiquifyUiMode, type ToolId } from "@/store/photo-editor";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 
@@ -23,7 +23,7 @@ const RETOQUE_TOOLS: ToolDef[] = [
   { id: "dentes", label: "Clarear dentes", hint: "Pincel: clareia e remove o amarelado" },
   { id: "olhos", label: "Clarear olhos", hint: "Pincel: ilumina e realça a íris" },
   { id: "olhos-vermelhos", label: "Olhos vermelhos", hint: "Clique sobre a pupila vermelha" },
-  { id: "liquify", label: "Remodelar", hint: "Arraste para remodelar; expandir/encolher/restaurar" },
+  { id: "liquify", label: "Remodelar", hint: "Barra bipolar: esquerda comprime/afina, direita expande. Ou empurre e restaure." },
 ];
 
 const PINCEL_TOOLS: ToolDef[] = [
@@ -35,10 +35,9 @@ const PINCEL_TOOLS: ToolDef[] = [
   { id: "borracha", label: "Borracha de fundo", hint: "Apaga pixels da cor clicada (vira transparência)" },
 ];
 
-const LIQUIFY_MODES: { id: LiquifyMode; label: string }[] = [
+const LIQUIFY_MODES: { id: LiquifyUiMode; label: string }[] = [
+  { id: "reshape", label: "Expandir / Comprimir" },
   { id: "empurrar", label: "Remodelar" },
-  { id: "expandir", label: "Expandir" },
-  { id: "encolher", label: "Encolher / afinar" },
   { id: "restaurar", label: "Restaurar" },
 ];
 
@@ -85,6 +84,12 @@ export function RetoquePanel() {
   const setSmoothAmount = usePhotoEditorStore((s) => s.setSmoothAmount);
   const liquifyMode = usePhotoEditorStore((s) => s.liquifyMode);
   const setLiquifyMode = usePhotoEditorStore((s) => s.setLiquifyMode);
+  const brushSize = usePhotoEditorStore((s) => s.brushSize);
+  const setBrushSize = usePhotoEditorStore((s) => s.setBrushSize);
+  const brushStrength = usePhotoEditorStore((s) => s.brushStrength);
+  const setBrushStrength = usePhotoEditorStore((s) => s.setBrushStrength);
+  const reshapeStrength = usePhotoEditorStore((s) => s.reshapeStrength);
+  const setReshapeStrength = usePhotoEditorStore((s) => s.setReshapeStrength);
   const clearMask = usePhotoEditorStore((s) => s.clearMask);
   const applyPixelOp = usePhotoEditorStore((s) => s.applyPixelOp);
   const setBusy = usePhotoEditorStore((s) => s.setBusy);
@@ -180,7 +185,7 @@ export function RetoquePanel() {
         </p>
       )}
 
-      <BrushSliders strengthLabel={tool === "liquify" ? "Intensidade da deformação" : "Força"} />
+      {tool !== "liquify" && <BrushSliders />}
 
       {tool === "suavizar" && (
         <div className="space-y-3 rounded-xl border border-line bg-surface-2/60 p-3">
@@ -200,22 +205,57 @@ export function RetoquePanel() {
       )}
 
       {tool === "liquify" && (
-        <div className="space-y-2 rounded-xl border border-line bg-surface-2/60 p-3">
-          <p className="text-[11px] font-semibold text-zinc-400">Modo do Remodelar</p>
-          <div className="flex flex-wrap gap-1.5" role="group" aria-label="Modo do Remodelar">
-            {LIQUIFY_MODES.map((m) => (
-              <button
-                key={m.id}
-                onClick={() => setLiquifyMode(m.id)}
-                aria-pressed={liquifyMode === m.id}
-                className={cn(
-                  "rounded-lg border px-2 py-1 text-[11px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400",
-                  liquifyMode === m.id ? "border-violet-500/60 bg-violet-500/10 text-white" : "border-line text-zinc-400 hover:text-white",
-                )}
-              >
-                {m.label}
-              </button>
-            ))}
+        <div className="space-y-3">
+          <Slider label="Tamanho do pincel" min={4} max={200} value={brushSize} onChange={setBrushSize} />
+          <p className="text-[11px] text-zinc-500">Atalhos: [ diminui e ] aumenta o pincel.</p>
+
+          <div className="space-y-3 rounded-xl border border-line bg-surface-2/60 p-3">
+            <p className="text-[11px] font-semibold text-zinc-400">Modo do Remodelar</p>
+            <div className="flex flex-wrap gap-1.5" role="group" aria-label="Modo do Remodelar">
+              {LIQUIFY_MODES.map((m) => (
+                <button
+                  key={m.id}
+                  onClick={() => setLiquifyMode(m.id)}
+                  aria-pressed={liquifyMode === m.id}
+                  className={cn(
+                    "rounded-lg border px-2 py-1 text-[11px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400",
+                    liquifyMode === m.id ? "border-violet-500/60 bg-violet-500/10 text-white" : "border-line text-zinc-400 hover:text-white",
+                  )}
+                >
+                  {m.label}
+                </button>
+              ))}
+            </div>
+
+            {liquifyMode === "reshape" && (
+              <div>
+                <div className="mb-1.5 flex items-center justify-between text-xs">
+                  <span className="text-zinc-400">◀ Comprimir</span>
+                  <span className="font-mono text-zinc-300">{reshapeStrength > 0 ? `+${reshapeStrength}` : reshapeStrength}</span>
+                  <span className="text-zinc-400">Expandir ▶</span>
+                </div>
+                <Slider
+                  bipolar
+                  min={-100}
+                  max={100}
+                  value={reshapeStrength}
+                  onChange={setReshapeStrength}
+                  aria-label="Intensidade da deformação: negativo comprime, positivo expande"
+                />
+                <p className="mt-1.5 text-[11px] leading-relaxed text-zinc-500">
+                  A barra começa no <b>zero</b> (centro). Arraste para a <b>esquerda</b> para
+                  comprimir/afinar e para a <b>direita</b> para expandir. No zero, o pincel não deforma.
+                </p>
+              </div>
+            )}
+
+            {liquifyMode === "empurrar" && (
+              <Slider label="Intensidade do empurrão" min={1} max={100} value={brushStrength} onChange={setBrushStrength} />
+            )}
+
+            {liquifyMode === "restaurar" && (
+              <Slider label="Força da restauração" min={1} max={100} value={brushStrength} onChange={setBrushStrength} />
+            )}
           </div>
         </div>
       )}

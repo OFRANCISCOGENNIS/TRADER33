@@ -282,8 +282,19 @@ export function FotoStage() {
           if (orig && orig.width === ctx.canvas.width && orig.height === ctx.canvas.height) {
             restoreStamp(ctx, orig, full.x, full.y, r * 1.4, st.brushStrength);
           }
+        } else if (st.liquifyMode === "reshape") {
+          // Barra bipolar: negativo comprime/afina, positivo expande. Zero = neutro.
+          if (st.reshapeStrength !== 0) {
+            liquifyStamp(
+              ctx, full.x, full.y, r * 1.4,
+              full.x - prevPt.x, full.y - prevPt.y,
+              st.reshapeStrength < 0 ? "encolher" : "expandir",
+              Math.abs(st.reshapeStrength),
+            );
+          }
         } else {
-          liquifyStamp(ctx, full.x, full.y, r * 1.4, full.x - prevPt.x, full.y - prevPt.y, st.liquifyMode, st.brushStrength);
+          // "empurrar": arrasta os pixels na direção do movimento do pincel.
+          liquifyStamp(ctx, full.x, full.y, r * 1.4, full.x - prevPt.x, full.y - prevPt.y, "empurrar", st.brushStrength);
         }
         break;
       default:
