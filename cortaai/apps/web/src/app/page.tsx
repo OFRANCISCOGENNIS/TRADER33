@@ -180,13 +180,13 @@ export default function LandingPage() {
           <div className="flex items-center gap-2">
             <ThemeToggle />
             <Link
-              href="/entrar"
+              href="/app"
               className="rounded-xl px-4 py-2 text-sm font-medium text-zinc-300 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
             >
               Entrar
             </Link>
             <Link
-              href="/cadastro"
+              href="/app"
               className="rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-glow transition-all hover:from-violet-500 hover:to-fuchsia-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
             >
               Começar grátis
@@ -216,13 +216,13 @@ export default function LandingPage() {
             </p>
             <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Link
-                href="/cadastro"
+                href="/app"
                 className="inline-flex h-12 items-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-7 text-base font-semibold text-white shadow-glow transition-all hover:from-violet-500 hover:to-fuchsia-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
               >
                 Editar meu primeiro vídeo grátis <ArrowRight className="h-4 w-4" aria-hidden />
               </Link>
               <Link
-                href="/entrar?demo=1"
+                href="/app"
                 className="inline-flex h-12 items-center gap-2 rounded-xl border border-line px-7 text-base font-medium text-zinc-300 transition-colors hover:border-violet-500/50 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
               >
                 Ver demonstração
@@ -342,7 +342,7 @@ export default function LandingPage() {
             </ol>
             <div className="mt-14 text-center">
               <Link
-                href="/cadastro"
+                href="/app"
                 className="inline-flex h-12 items-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-7 text-base font-semibold text-white shadow-glow transition-all hover:from-violet-500 hover:to-fuchsia-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
               >
                 Quero testar agora <ArrowRight className="h-4 w-4" aria-hidden />
@@ -405,7 +405,7 @@ export default function LandingPage() {
             </div>
             <div className="mt-14 text-center">
               <Link
-                href="/cadastro"
+                href="/app"
                 className="inline-flex h-12 items-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-7 text-base font-semibold text-white shadow-glow transition-all hover:from-violet-500 hover:to-fuchsia-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
               >
                 Criar conta grátis <ArrowRight className="h-4 w-4" aria-hidden />
@@ -426,7 +426,7 @@ export default function LandingPage() {
               <h2 className="text-2xl font-extrabold text-white">Seu próximo vídeo já está gravado.</h2>
               <p className="mt-2 text-zinc-400">Ele só precisa ser editado, legendado e exportado.</p>
               <Link
-                href="/cadastro"
+                href="/app"
                 className="mt-6 inline-flex h-12 items-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-7 text-base font-semibold text-white shadow-glow transition-all hover:from-violet-500 hover:to-fuchsia-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
               >
                 Começar grátis agora <ArrowRight className="h-4 w-4" aria-hidden />
@@ -448,8 +448,8 @@ export default function LandingPage() {
           <nav className="flex flex-wrap items-center gap-6 text-sm text-zinc-500" aria-label="Links do rodapé">
             <a href="#como-funciona" className="hover:text-white">Como funciona</a>
             <a href="#recursos" className="hover:text-white">Recursos</a>
-            <Link href="/entrar" className="hover:text-white">Entrar</Link>
-            <Link href="/cadastro" className="hover:text-white">Criar conta</Link>
+            <Link href="/app" className="hover:text-white">Entrar</Link>
+            <Link href="/app" className="hover:text-white">Criar conta</Link>
           </nav>
         </div>
         <p className="mt-8 text-center text-xs text-zinc-700">
