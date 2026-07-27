@@ -114,6 +114,8 @@ export function drawComposite(
 interface DrawMods {
   alphaMul?: number;
   scaleMul?: number;
+  /** Desfoque extra em px de tela (usado por transições como "Desfoque"). */
+  blurAdd?: number;
 }
 
 /** Desenha um clipe visual (vídeo/imagem) com transformações, filtro, animações e efeitos. */
@@ -144,7 +146,7 @@ function drawVisualClip(
   const drawH = d.h * cover * scale;
 
   const filter = filterById(clip.filterId);
-  const blurPx = env.blurPx > 0 ? (env.blurPx / 100) * canvasH * 0.06 : 0;
+  const blurPx = (env.blurPx > 0 ? (env.blurPx / 100) * canvasH * 0.06 : 0) + (mods?.blurAdd ?? 0);
   const ca = clip.colorAdjust;
   const gradeCss = ca
     ? `brightness(${(1 + ca.brightness / 100).toFixed(3)}) contrast(${(1 + ca.contrast / 100).toFixed(3)}) saturate(${Math.max(0, 1 + ca.saturation / 100).toFixed(3)})${ca.hue ? ` hue-rotate(${Math.round(ca.hue)}deg)` : ""}`
@@ -394,6 +396,144 @@ function drawWithTransition(
       ctx.restore();
       break;
     }
+    case "deslizar-direita":
+      // o novo clipe entra pela esquerda
+      drawPrev();
+      ctx.save();
+      ctx.translate(-(1 - p) * canvasW, 0);
+      drawCur();
+      ctx.restore();
+      break;
+    case "descer":
+      // o novo clipe desce de cima para baixo
+      drawPrev();
+      ctx.save();
+      ctx.translate(0, -(1 - p) * canvasH);
+      drawCur();
+      ctx.restore();
+      break;
+    case "empurrar-cima":
+      // push vertical: o anterior sobe e sai, o novo sobe atrás
+      ctx.save();
+      ctx.translate(0, -p * canvasH);
+      drawPrev();
+      ctx.restore();
+      ctx.save();
+      ctx.translate(0, (1 - p) * canvasH);
+      drawCur();
+      ctx.restore();
+      break;
+    case "afastar":
+      // o novo clipe chega grande e assenta; o anterior encolhe saindo
+      drawPrev({ alphaMul: 1 - p, scaleMul: 1 - 0.2 * p });
+      drawCur({ alphaMul: p, scaleMul: 1.6 - 0.6 * p });
+      break;
+    case "losango": {
+      // wipe em losango crescendo do centro
+      drawPrev();
+      const r = Math.max(1, p * (canvasW + canvasH) * 0.6);
+      const cx = canvasW / 2;
+      const cy = canvasH / 2;
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - r);
+      ctx.lineTo(cx + r, cy);
+      ctx.lineTo(cx, cy + r);
+      ctx.lineTo(cx - r, cy);
+      ctx.closePath();
+      ctx.clip();
+      drawCur();
+      ctx.restore();
+      break;
+    }
+    case "barras": {
+      // blinds verticais: 8 colunas abrem ao mesmo tempo
+      drawPrev();
+      const cols = 8;
+      const bandW = canvasW / cols;
+      ctx.save();
+      ctx.beginPath();
+      for (let i = 0; i < cols; i++) {
+        ctx.rect(i * bandW, 0, Math.max(1, p * bandW), canvasH);
+      }
+      ctx.clip();
+      drawCur();
+      ctx.restore();
+      break;
+    }
+    case "desfoque": {
+      // crossfade desfocando: o borrão cresce no meio da transição
+      const peak = (1 - Math.abs(p - 0.5) * 2) * canvasH * 0.05;
+      drawPrev({ alphaMul: 1 - p, blurAdd: peak });
+      drawCur({ alphaMul: p, blurAdd: peak });
+      break;
+    }
+    case "branco": {
+      // passa por branco: some no branco e volta no novo clipe
+      if (p < 0.5) drawPrev({ alphaMul: 1 - 2 * p });
+      else drawCur({ alphaMul: 2 * p - 1 });
+      const a = 1 - Math.abs(p - 0.5) * 2;
+      ctx.save();
+      ctx.globalAlpha = a;
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvasW, canvasH);
+      ctx.restore();
+      break;
+    }
+    case "iris": {
+      // íris fechando sobre o anterior, revelando o novo por trás
+      drawCur();
+      const R = Math.hypot(canvasW, canvasH) / 2;
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(canvasW / 2, canvasH / 2, Math.max(0.001, (1 - p) * R), 0, Math.PI * 2);
+      ctx.clip();
+      drawPrev();
+      ctx.restore();
+      break;
+    }
+    case "espremer":
+      // o anterior é espremido na horizontal até sumir
+      drawCur();
+      ctx.save();
+      ctx.translate(canvasW / 2, 0);
+      ctx.scale(Math.max(0.001, 1 - p), 1);
+      ctx.translate(-canvasW / 2, 0);
+      drawPrev();
+      ctx.restore();
+      break;
+    case "dividir": {
+      // o anterior se abre ao meio (duas metades saindo) revelando o novo
+      drawCur();
+      const half = canvasW / 2;
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(0, 0, half, canvasH);
+      ctx.clip();
+      ctx.translate(-p * half, 0);
+      drawPrev();
+      ctx.restore();
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(half, 0, half, canvasH);
+      ctx.clip();
+      ctx.translate(p * half, 0);
+      drawPrev();
+      ctx.restore();
+      break;
+    }
+    case "tremor": {
+      // corte com tremida: deslocamento determinístico (preview == export)
+      const amp = (1 - Math.abs(p - 0.5) * 2) * canvasH * 0.04;
+      const ox = Math.sin(p * Math.PI * 14) * amp;
+      const oy = Math.cos(p * Math.PI * 11) * amp;
+      ctx.save();
+      ctx.translate(ox, oy);
+      if (p < 0.5) drawPrev();
+      else drawCur();
+      ctx.restore();
+      break;
+    }
     case "fundido":
     default:
       drawPrev({ alphaMul: 1 - p });
@@ -456,6 +596,29 @@ function getNoiseCanvas(): HTMLCanvasElement | null {
   nctx.putImageData(img, 0, 0);
   noiseCanvas = c;
   return c;
+}
+
+/** Canvas auxiliar reaproveitado pelos efeitos que copiam a tela (pixelado/espelho). */
+let scratchCanvas: HTMLCanvasElement | null = null;
+let scratchCtx: CanvasRenderingContext2D | null = null;
+function getScratch(w: number, h: number): { canvas: HTMLCanvasElement; ctx: CanvasRenderingContext2D } | null {
+  if (w <= 0 || h <= 0 || typeof document === "undefined") return null;
+  if (!scratchCanvas) {
+    scratchCanvas = document.createElement("canvas");
+    scratchCtx = scratchCanvas.getContext("2d");
+  }
+  if (!scratchCanvas || !scratchCtx) return null;
+  if (scratchCanvas.width !== w || scratchCanvas.height !== h) {
+    scratchCanvas.width = w;
+    scratchCanvas.height = h;
+  }
+  scratchCtx.setTransform(1, 0, 0, 1, 0, 0);
+  scratchCtx.globalAlpha = 1;
+  scratchCtx.globalCompositeOperation = "source-over";
+  scratchCtx.filter = "none";
+  scratchCtx.imageSmoothingEnabled = true;
+  scratchCtx.clearRect(0, 0, w, h);
+  return { canvas: scratchCanvas, ctx: scratchCtx };
 }
 
 function applyOverlayEffects(
@@ -582,6 +745,188 @@ function applyOverlayEffects(
         ctx.lineTo(x - len * 0.18, y + len);
         ctx.stroke();
       }
+      ctx.restore();
+    } else if (fx.id === "bokeh") {
+      // círculos desfocados subindo devagar (blend screen)
+      ctx.save();
+      ctx.globalCompositeOperation = "screen";
+      const n = 18;
+      for (let i = 0; i < n; i++) {
+        const speed = 0.02 + hash01(i * 2.9) * 0.05;
+        const y01 = 1 - ((hash01(i * 6.1) + (playheadMs / 1000) * speed) % 1);
+        const x = hash01(i * 1.37) * canvasW + Math.sin(playheadMs * 0.0004 + i) * canvasW * 0.02;
+        const r = (0.02 + hash01(i * 3.3) * 0.05) * canvasH;
+        const grad = ctx.createRadialGradient(x, y01 * canvasH, 0, x, y01 * canvasH, r);
+        const a = (0.18 + hash01(i * 7.7) * 0.3) * k;
+        grad.addColorStop(0, `rgba(255,245,220,${a.toFixed(3)})`);
+        grad.addColorStop(0.7, `rgba(255,235,190,${(a * 0.5).toFixed(3)})`);
+        grad.addColorStop(1, "rgba(255,230,180,0)");
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(x, y01 * canvasH, r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    } else if (fx.id === "poeira") {
+      // partículas finas flutuando na luz
+      ctx.save();
+      ctx.globalCompositeOperation = "screen";
+      const n = 120;
+      for (let i = 0; i < n; i++) {
+        const speed = 0.01 + hash01(i * 4.7) * 0.03;
+        const y01 = 1 - ((hash01(i * 2.2) + (playheadMs / 1000) * speed) % 1);
+        const x = hash01(i * 1.9) * canvasW + Math.sin(playheadMs * 0.0006 + i * 2) * canvasW * 0.03;
+        const r = (0.4 + hash01(i * 8.3) * 1.3) * (canvasH / 540);
+        ctx.globalAlpha = (0.25 + hash01(i * 5.5) * 0.5) * k;
+        ctx.fillStyle = "#fff8e6";
+        ctx.beginPath();
+        ctx.arc(x, y01 * canvasH, r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    } else if (fx.id === "confete") {
+      // retângulos coloridos caindo e girando
+      const COLORS = ["#f43f5e", "#facc15", "#22d3ee", "#a855f7", "#4ade80", "#fb923c"];
+      ctx.save();
+      const n = 70;
+      for (let i = 0; i < n; i++) {
+        const speed = 0.25 + hash01(i * 3.9) * 0.35;
+        const y01 = (hash01(i * 6.7) + (playheadMs / 1000) * speed) % 1;
+        const x = hash01(i * 1.23) * canvasW + Math.sin(playheadMs * 0.002 + i) * canvasW * 0.03;
+        const w = (0.008 + hash01(i * 9.4) * 0.008) * canvasW;
+        const h = w * 0.5;
+        ctx.save();
+        ctx.translate(x, y01 * canvasH);
+        ctx.rotate(playheadMs * 0.004 + i);
+        ctx.globalAlpha = 0.85 * k;
+        ctx.fillStyle = COLORS[i % COLORS.length];
+        ctx.fillRect(-w / 2, -h / 2, w, h);
+        ctx.restore();
+      }
+      ctx.restore();
+    } else if (fx.id === "estrelas") {
+      // brilhos piscando em posições fixas
+      ctx.save();
+      ctx.globalCompositeOperation = "screen";
+      const n = 60;
+      for (let i = 0; i < n; i++) {
+        const x = hash01(i * 1.61) * canvasW;
+        const y = hash01(i * 3.14) * canvasH;
+        const phase = hash01(i * 5.2) * Math.PI * 2;
+        const tw = 0.5 + 0.5 * Math.sin(playheadMs * 0.003 + phase);
+        const r = (0.6 + hash01(i * 7.1) * 1.6) * (canvasH / 540) * (0.6 + tw);
+        ctx.globalAlpha = (0.25 + tw * 0.6) * k;
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fill();
+        // brilho em cruz nas maiores
+        if (hash01(i * 2.71) > 0.75) {
+          ctx.globalAlpha = (0.15 + tw * 0.35) * k;
+          const L = r * 4;
+          ctx.fillRect(x - L, y - r * 0.18, L * 2, r * 0.36);
+          ctx.fillRect(x - r * 0.18, y - L, r * 0.36, L * 2);
+        }
+      }
+      ctx.restore();
+    } else if (fx.id === "brilho") {
+      // bloom: cópia desfocada da própria imagem somada por cima
+      const s = getScratch(canvasW, canvasH);
+      if (!s) continue;
+      try {
+        s.ctx.filter = `blur(${Math.max(2, canvasH * 0.02).toFixed(1)}px) brightness(1.35)`;
+        s.ctx.drawImage(ctx.canvas, 0, 0);
+        s.ctx.filter = "none";
+        ctx.save();
+        ctx.globalCompositeOperation = "screen";
+        ctx.globalAlpha = 0.55 * k;
+        ctx.drawImage(s.canvas, 0, 0);
+        ctx.restore();
+      } catch {
+        /* frame não pronto */
+      }
+    } else if (fx.id === "raios") {
+      // god rays: feixes claros saindo de um ponto alto da tela
+      ctx.save();
+      ctx.globalCompositeOperation = "screen";
+      const ox = canvasW * 0.72;
+      const oy = -canvasH * 0.1;
+      const R = Math.hypot(canvasW, canvasH) * 1.3;
+      const beams = 9;
+      for (let i = 0; i < beams; i++) {
+        const base = (i / beams) * Math.PI * 2 + playheadMs * 0.00008;
+        const wdt = 0.02 + hash01(i * 3.3) * 0.03;
+        const a = (0.05 + hash01(i * 5.9) * 0.09) * k;
+        ctx.beginPath();
+        ctx.moveTo(ox, oy);
+        ctx.lineTo(ox + Math.cos(base - wdt) * R, oy + Math.sin(base - wdt) * R);
+        ctx.lineTo(ox + Math.cos(base + wdt) * R, oy + Math.sin(base + wdt) * R);
+        ctx.closePath();
+        const grad = ctx.createRadialGradient(ox, oy, 0, ox, oy, R);
+        grad.addColorStop(0, `rgba(255,240,200,${a.toFixed(3)})`);
+        grad.addColorStop(1, "rgba(255,240,200,0)");
+        ctx.fillStyle = grad;
+        ctx.fill();
+      }
+      ctx.restore();
+    } else if (fx.id === "fumaca") {
+      // névoa: manchas suaves que deslizam devagar
+      ctx.save();
+      ctx.globalCompositeOperation = "screen";
+      const n = 7;
+      for (let i = 0; i < n; i++) {
+        const t = playheadMs * 0.00012;
+        const x = ((hash01(i * 2.4) + t * (0.3 + hash01(i * 4.8) * 0.5)) % 1.4 - 0.2) * canvasW;
+        const y = canvasH * (0.2 + hash01(i * 6.6) * 0.7) + Math.sin(t * 6 + i) * canvasH * 0.05;
+        const r = canvasH * (0.18 + hash01(i * 8.2) * 0.22);
+        const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
+        grad.addColorStop(0, `rgba(220,225,235,${(0.16 * k).toFixed(3)})`);
+        grad.addColorStop(1, "rgba(220,225,235,0)");
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, canvasW, canvasH);
+      }
+      ctx.restore();
+    } else if (fx.id === "pixelado") {
+      // mosaico: reduz e amplia sem suavização
+      const blocks = Math.max(8, Math.round(160 - 140 * k));
+      const sw = Math.max(2, Math.round(blocks));
+      const sh = Math.max(2, Math.round((blocks * canvasH) / canvasW));
+      const s = getScratch(sw, sh);
+      if (!s) continue;
+      try {
+        s.ctx.drawImage(ctx.canvas, 0, 0, sw, sh);
+        ctx.save();
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(s.canvas, 0, 0, sw, sh, 0, 0, canvasW, canvasH);
+        ctx.restore();
+      } catch {
+        /* frame não pronto */
+      }
+    } else if (fx.id === "espelho") {
+      // espelha a metade esquerda sobre a direita
+      const s = getScratch(canvasW, canvasH);
+      if (!s) continue;
+      try {
+        s.ctx.drawImage(ctx.canvas, 0, 0);
+        ctx.save();
+        ctx.globalAlpha = k;
+        ctx.translate(canvasW, 0);
+        ctx.scale(-1, 1);
+        ctx.beginPath();
+        ctx.rect(0, 0, canvasW / 2, canvasH);
+        ctx.clip();
+        ctx.drawImage(s.canvas, 0, 0);
+        ctx.restore();
+      } catch {
+        /* frame não pronto */
+      }
+    } else if (fx.id === "moldura") {
+      // moldura preta nas bordas (estilo cinema)
+      const t = Math.max(2, canvasH * 0.06 * k);
+      ctx.save();
+      ctx.fillStyle = "#000";
+      ctx.fillRect(0, 0, canvasW, t);
+      ctx.fillRect(0, canvasH - t, canvasW, t);
       ctx.restore();
     }
   }

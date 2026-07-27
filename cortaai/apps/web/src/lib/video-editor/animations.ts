@@ -91,6 +91,78 @@ export const ANIM_PRESETS: AnimPreset[] = [
       rotation: (1 - easeOutCubic(p)) * 20,
     }),
   },
+  {
+    id: "slide-down",
+    name: "Descer ↓",
+    at: (p) => ({ ...NEUTRAL_ENVELOPE, opacity: Math.min(1, p * 1.4), dy: -(1 - easeOutCubic(p)) * 0.5 }),
+  },
+  {
+    id: "pop",
+    name: "Pop",
+    // estoura passando do tamanho final e volta (overshoot elástico)
+    at: (p) => ({ ...NEUTRAL_ENVELOPE, opacity: Math.min(1, p * 2), scale: 0.3 + 0.7 * easeOutBack(p) }),
+  },
+  {
+    id: "tremor",
+    name: "Tremor",
+    // entra tremendo e estabiliza
+    at: (p) => ({
+      ...NEUTRAL_ENVELOPE,
+      opacity: Math.min(1, p * 2),
+      dx: Math.sin(p * Math.PI * 9) * (1 - p) * 0.06,
+      dy: Math.cos(p * Math.PI * 7) * (1 - p) * 0.05,
+    }),
+  },
+  {
+    id: "diagonal",
+    name: "Diagonal ↘",
+    at: (p) => ({
+      ...NEUTRAL_ENVELOPE,
+      opacity: Math.min(1, p * 1.4),
+      dx: (1 - easeOutCubic(p)) * 0.5,
+      dy: (1 - easeOutCubic(p)) * 0.4,
+    }),
+  },
+  {
+    id: "girar-zoom",
+    name: "Girar + Zoom",
+    at: (p) => ({
+      ...NEUTRAL_ENVELOPE,
+      opacity: p,
+      rotation: (1 - easeOutCubic(p)) * 180,
+      scale: 0.2 + 0.8 * easeOutCubic(p),
+    }),
+  },
+  {
+    id: "desfoque-zoom",
+    name: "Desfoque + Zoom",
+    at: (p) => ({
+      ...NEUTRAL_ENVELOPE,
+      opacity: Math.min(1, p * 1.3),
+      scale: 1.35 - 0.35 * easeOutCubic(p),
+      blurPx: (1 - p) * 30,
+    }),
+  },
+  {
+    id: "balanco",
+    name: "Balanço",
+    // entra balançando como um pêndulo até parar
+    at: (p) => ({
+      ...NEUTRAL_ENVELOPE,
+      opacity: Math.min(1, p * 1.6),
+      rotation: Math.sin(p * Math.PI * 3) * (1 - p) * 18,
+      scale: 0.85 + 0.15 * easeOutCubic(p),
+    }),
+  },
+  {
+    id: "elastico",
+    name: "Elástico",
+    at: (p) => ({
+      ...NEUTRAL_ENVELOPE,
+      opacity: Math.min(1, p * 2),
+      scale: 1 + Math.sin(p * Math.PI * 3) * (1 - p) * 0.35,
+    }),
+  },
 ];
 
 const byId = new Map<string, AnimPreset>();

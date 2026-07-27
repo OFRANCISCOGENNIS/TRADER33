@@ -51,6 +51,62 @@ export const CLIP_FILTERS: ClipFilter[] = [
     overlay: { color: "#0a0a14", opacity: 0.18, blend: "overlay" },
   },
   { id: "nitido", name: "Nítido", css: "contrast(1.15) saturate(1.1) brightness(1.02)" },
+  {
+    id: "filme-70",
+    name: "Filme 70's",
+    css: "sepia(0.45) saturate(1.15) contrast(1.05) brightness(1.02)",
+    overlay: { color: "#c8761f", opacity: 0.16, blend: "soft-light" },
+  },
+  {
+    id: "noturno",
+    name: "Noturno",
+    css: "brightness(0.9) contrast(1.15) saturate(0.85) hue-rotate(200deg)",
+    overlay: { color: "#12325e", opacity: 0.22, blend: "overlay" },
+  },
+  {
+    id: "sonho",
+    name: "Sonho",
+    css: "brightness(1.1) saturate(1.15) contrast(0.9) blur(0.4px)",
+    overlay: { color: "#ffd9ec", opacity: 0.14, blend: "screen" },
+  },
+  { id: "desbotado", name: "Desbotado", css: "saturate(0.6) contrast(0.88) brightness(1.12)" },
+  {
+    id: "verao",
+    name: "Verão",
+    css: "saturate(1.35) brightness(1.08) contrast(1.05)",
+    overlay: { color: "#ffb347", opacity: 0.12, blend: "soft-light" },
+  },
+  {
+    id: "matrix",
+    name: "Matrix",
+    css: "grayscale(1) sepia(1) hue-rotate(60deg) saturate(2.2) contrast(1.2)",
+  },
+  {
+    id: "cyberpunk",
+    name: "Cyberpunk",
+    css: "saturate(1.8) contrast(1.3) hue-rotate(-18deg) brightness(1.02)",
+    overlay: { color: "#ff2d95", opacity: 0.15, blend: "overlay" },
+  },
+  { id: "alto-contraste", name: "Alto contraste", css: "contrast(1.55) saturate(1.15) brightness(0.98)" },
+  {
+    id: "pastel",
+    name: "Pastel",
+    css: "saturate(0.78) brightness(1.12) contrast(0.9)",
+    overlay: { color: "#ffe9f0", opacity: 0.16, blend: "soft-light" },
+  },
+  {
+    id: "terroso",
+    name: "Terroso",
+    css: "sepia(0.3) saturate(1.05) contrast(1.08) brightness(0.98)",
+    overlay: { color: "#6b4a2f", opacity: 0.14, blend: "overlay" },
+  },
+  { id: "invertido", name: "Invertido", css: "invert(1)" },
+  {
+    id: "infravermelho",
+    name: "Infravermelho",
+    css: "hue-rotate(300deg) saturate(1.9) contrast(1.2)",
+    overlay: { color: "#ff3d6e", opacity: 0.14, blend: "overlay" },
+  },
 ];
 
 const byId = new Map<string, ClipFilter>();
@@ -72,4 +128,14 @@ export const OVERLAY_EFFECTS: { id: string; name: string }[] = [
   { id: "light-leak", name: "Vazamento de luz" },
   { id: "snow", name: "Neve" },
   { id: "rain", name: "Chuva" },
+  { id: "bokeh", name: "Bokeh" },
+  { id: "poeira", name: "Poeira" },
+  { id: "confete", name: "Confete" },
+  { id: "estrelas", name: "Estrelas" },
+  { id: "brilho", name: "Brilho (bloom)" },
+  { id: "raios", name: "Raios de luz" },
+  { id: "fumaca", name: "Fumaça" },
+  { id: "pixelado", name: "Pixelado" },
+  { id: "espelho", name: "Espelho" },
+  { id: "moldura", name: "Moldura" },
 ];

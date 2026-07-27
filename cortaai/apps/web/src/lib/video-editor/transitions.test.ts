@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { makeClip, makeTrack } from "./model";
 import { previousAdjacentClip, transitionAt, TRANSITIONS } from "./transitions";
@@ -22,6 +23,16 @@ describe("catálogo TRANSITIONS", () => {
     for (const id of ["empurrar", "deslizar-cima", "giro", "relogio", "xadrez", "diagonal", "flash"]) {
       expect(ids.has(id)).toBe(true);
     }
+  });
+
+  // Guarda contra adicionar um preset no catálogo sem desenhá-lo: o motor
+  // precisa ter um `case "<id>"` para cada transição ("fundido" é o default).
+  it("toda transição do catálogo tem um case no engine", () => {
+    const engine = readFileSync(new URL("./engine.ts", import.meta.url), "utf8");
+    const semDesenho = TRANSITIONS.filter(
+      (t) => t.id !== "fundido" && !engine.includes(`case "${t.id}"`),
+    ).map((t) => t.id);
+    expect(semDesenho).toEqual([]);
   });
 });
 
