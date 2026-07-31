@@ -456,7 +456,18 @@ export default function EstudioPage() {
         <aside className="editor-scroll hidden shrink-0 overflow-y-auto border-l border-white/[0.06] bg-surface-1/30 p-3 lg:block lg:w-[300px]">
           <div className="mb-2 flex items-center justify-between">
             <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
-              <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden />
+              {rightView === "panel" && rail !== "ferramentas" ? (
+                <button
+                  onClick={() => openPanel("ferramentas")}
+                  aria-label="Voltar às ferramentas"
+                  title="Voltar às ferramentas"
+                  className="-ml-1 rounded-lg p-1 text-zinc-400 transition-colors hover:bg-white/5 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </button>
+              ) : (
+                <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden />
+              )}
               {rightView === "panel" ? PANEL_TITLES[rail] : "Propriedades"}
             </p>
             {rightView === "panel" ? (

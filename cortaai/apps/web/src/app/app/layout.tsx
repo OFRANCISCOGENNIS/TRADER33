@@ -30,6 +30,7 @@ import { CommandPalette } from "@/components/command-palette";
 import { GlobalShortcuts } from "@/components/global-shortcuts";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth";
+import { DEMO_EMAIL } from "@/lib/session-scope";
 import { useRenderQueueStore } from "@/store/render-queue";
 
 const NAV = [
@@ -49,7 +50,7 @@ const NAV = [
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, hydrated, logout } = useAuthStore();
+  const { user, hydrated, logout, login } = useAuthStore();
   const resumeSimulations = useRenderQueueStore((s) => s.resumeSimulations);
   const runningRenders = useRenderQueueStore(
     (s) => s.items.filter((i) => i.status === "running" || i.status === "queued").length,
@@ -57,8 +58,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
-    if (hydrated && !user) router.replace("/entrar");
-  }, [hydrated, user, router]);
+    // Acesso direto, sem tela de login: se não houver sessão, entra
+    // automaticamente na conta de demonstração (com conteúdo de exemplo)
+    // para abrir o programa na hora.
+    if (hydrated && !user) void login(DEMO_EMAIL, "demo");
+  }, [hydrated, user, login]);
 
   useEffect(() => {
     // Restart simulated render workers persisted from a previous session.
@@ -69,7 +73,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   if (!hydrated || !user) {
     return (
-      <div className="flex min-h-screen items-center justify-center" role="status" aria-label="Carregando sessão">
+      <div className="flex min-h-screen items-center justify-center" role="status" aria-label="Abrindo o app">
         <div className="h-10 w-10 animate-spin rounded-full border-2 border-violet-500 border-t-transparent" />
       </div>
     );

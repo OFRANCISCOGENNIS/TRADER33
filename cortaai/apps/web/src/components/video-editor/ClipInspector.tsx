@@ -189,6 +189,22 @@ export function ClipInspector() {
     updateClip(clip.id, { eq: isFlat ? undefined : next });
   }
 
+  function patchReverb(patch: Partial<{ mix: number; size: number }>) {
+    const next = { ...(clip.reverb ?? { mix: 0, size: 50 }), ...patch };
+    updateClip(clip.id, { reverb: next.mix > 0 ? next : undefined });
+  }
+
+  function patchEcho(patch: Partial<{ timeMs: number; feedback: number; mix: number }>) {
+    const next = { ...(clip.echo ?? { timeMs: 300, feedback: 30, mix: 0 }), ...patch };
+    updateClip(clip.id, { echo: next.mix > 0 ? next : undefined });
+  }
+
+  function patchToneFx(patch: Partial<{ bass: number; treble: number; phone?: boolean }>) {
+    const next = { ...(clip.toneFx ?? { bass: 0, treble: 0 }), ...patch };
+    const empty = !next.bass && !next.treble && !next.phone;
+    updateClip(clip.id, { toneFx: empty ? undefined : next });
+  }
+
   function toggleEffect(fxId: string) {
     const has = clip.effects.some((e) => e.id === fxId);
     updateClip(clip.id, {
@@ -522,6 +538,85 @@ export function ClipInspector() {
             <EqSlider label="Graves" value={clip.eq?.low ?? 0} onChange={(v) => patchEq({ low: v })} />
             <EqSlider label="Médios" value={clip.eq?.mid ?? 0} onChange={(v) => patchEq({ mid: v })} />
             <EqSlider label="Agudos" value={clip.eq?.high ?? 0} onChange={(v) => patchEq({ high: v })} />
+          </Section>
+
+          <Section title="Reverberação (ambiência)">
+            <Slider
+              label="Quantidade"
+              value={clip.reverb?.mix ?? 0}
+              min={0}
+              max={100}
+              step={1}
+              onChange={(v) => patchReverb({ mix: v })}
+              format={(v) => (v > 0 ? `${Math.round(v)}%` : "—")}
+            />
+            {(clip.reverb?.mix ?? 0) > 0 && (
+              <Slider
+                label="Tamanho do ambiente"
+                value={clip.reverb?.size ?? 50}
+                min={0}
+                max={100}
+                step={1}
+                onChange={(v) => patchReverb({ size: v })}
+                format={(v) => (v < 33 ? "Sala" : v < 66 ? "Salão" : "Igreja")}
+              />
+            )}
+          </Section>
+
+          <Section title="Eco (delay)">
+            <Slider
+              label="Quantidade"
+              value={clip.echo?.mix ?? 0}
+              min={0}
+              max={100}
+              step={1}
+              onChange={(v) => patchEcho({ mix: v })}
+              format={(v) => (v > 0 ? `${Math.round(v)}%` : "—")}
+            />
+            {(clip.echo?.mix ?? 0) > 0 && (
+              <>
+                <Slider
+                  label="Intervalo"
+                  value={clip.echo?.timeMs ?? 300}
+                  min={50}
+                  max={1200}
+                  step={10}
+                  onChange={(v) => patchEcho({ timeMs: v })}
+                  format={(v) => `${Math.round(v)} ms`}
+                />
+                <Slider
+                  label="Repetições"
+                  value={clip.echo?.feedback ?? 30}
+                  min={0}
+                  max={90}
+                  step={1}
+                  onChange={(v) => patchEcho({ feedback: v })}
+                  format={(v) => `${Math.round(v)}%`}
+                />
+              </>
+            )}
+          </Section>
+
+          <Section title="Compressor e tom">
+            <Slider
+              label="Compressor (nivela o volume)"
+              value={clip.compressor?.amount ?? 0}
+              min={0}
+              max={100}
+              step={1}
+              onChange={(v) => updateClip(clip.id, { compressor: v > 0 ? { amount: v } : undefined })}
+              format={(v) => (v > 0 ? `${Math.round(v)}%` : "—")}
+            />
+            <EqSlider label="Reforço de grave" value={clip.toneFx?.bass ?? 0} onChange={(v) => patchToneFx({ bass: v })} />
+            <EqSlider label="Reforço de agudo" value={clip.toneFx?.treble ?? 0} onChange={(v) => patchToneFx({ treble: v })} />
+            <Switch
+              label="Voz de telefone / rádio"
+              checked={clip.toneFx?.phone === true}
+              onChange={(on) => patchToneFx({ phone: on || undefined })}
+            />
+            <p className="text-[10px] text-zinc-600">
+              Reverberação, eco, compressor e tom são aplicados no arquivo exportado (o preview toca sem eles).
+            </p>
           </Section>
         </>
       )}

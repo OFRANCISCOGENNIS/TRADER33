@@ -82,6 +82,14 @@ export interface Clip {
   freeze?: boolean; // congela o frame em `trimIn` por toda a duração do clipe
   /** Tratamentos de áudio (DSP real, aplicado na exportação). */
   audioFx?: { denoise?: boolean; voice?: boolean };
+  /** Reverberação (ambiência): mix 0..100, tamanho do ambiente 0..100. */
+  reverb?: { mix: number; size: number };
+  /** Eco / delay: tempo em ms, retorno (feedback) 0..90, mix 0..100. */
+  echo?: { timeMs: number; feedback: number; mix: number };
+  /** Compressor por clipe: quantidade 0..100 (nivela o volume). */
+  compressor?: { amount: number };
+  /** Grave/agudo extra em dB (-12..+12) e telefone/rádio (passa-banda). */
+  toneFx?: { bass: number; treble: number; phone?: boolean };
   /** Chroma key: remove a cor (fundo verde/azul) do clipe de vídeo. */
   chroma?: { color: string; tolerance: number; softness: number };
   /** Remoção de fundo por IA (segmentação de pessoa, sem tela verde). */
@@ -282,8 +290,51 @@ function sanitizeClip(c: Clip, trackId: string): Clip {
     fadeOutMs: typeof c.fadeOutMs === "number" && c.fadeOutMs > 0 ? Math.min(10_000, Math.round(c.fadeOutMs)) : undefined,
     transitionIn: sanitizeAnim(c.transitionIn),
     eq: sanitizeEq(c.eq),
+    reverb: sanitizeReverb(c.reverb),
+    echo: sanitizeEcho(c.echo),
+    compressor: sanitizeCompressor(c.compressor),
+    toneFx: sanitizeToneFx(c.toneFx),
     text: c.text,
   };
+}
+
+/** 0..lim, com fallback quando o valor não é um número finito. */
+function pct(v: unknown, lim = 100, fallback = 0): number {
+  return typeof v === "number" && Number.isFinite(v) ? Math.min(lim, Math.max(0, v)) : fallback;
+}
+
+function sanitizeReverb(r: unknown): { mix: number; size: number } | undefined {
+  if (!r || typeof r !== "object") return undefined;
+  const o = r as { mix?: unknown; size?: unknown };
+  const mix = pct(o.mix);
+  if (mix <= 0) return undefined;
+  return { mix, size: pct(o.size, 100, 50) };
+}
+
+function sanitizeEcho(e: unknown): { timeMs: number; feedback: number; mix: number } | undefined {
+  if (!e || typeof e !== "object") return undefined;
+  const o = e as { timeMs?: unknown; feedback?: unknown; mix?: unknown };
+  const mix = pct(o.mix);
+  if (mix <= 0) return undefined;
+  const timeMs = typeof o.timeMs === "number" && Number.isFinite(o.timeMs) ? Math.min(2000, Math.max(20, o.timeMs)) : 300;
+  return { timeMs, feedback: pct(o.feedback, 90, 30), mix };
+}
+
+function sanitizeCompressor(c: unknown): { amount: number } | undefined {
+  if (!c || typeof c !== "object") return undefined;
+  const amount = pct((c as { amount?: unknown }).amount);
+  return amount > 0 ? { amount } : undefined;
+}
+
+function sanitizeToneFx(t: unknown): { bass: number; treble: number; phone?: boolean } | undefined {
+  if (!t || typeof t !== "object") return undefined;
+  const o = t as { bass?: unknown; treble?: unknown; phone?: unknown };
+  const db = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? Math.min(12, Math.max(-12, v)) : 0);
+  const bass = db(o.bass);
+  const treble = db(o.treble);
+  const phone = o.phone === true ? true : undefined;
+  if (!bass && !treble && !phone) return undefined;
+  return { bass, treble, phone };
 }
 
 function sanitizeColorAdjust(

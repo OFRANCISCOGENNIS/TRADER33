@@ -21,6 +21,18 @@ export const TRANSITIONS: { id: string; name: string }[] = [
   { id: "xadrez", name: "Xadrez" },
   { id: "diagonal", name: "Diagonal" },
   { id: "flash", name: "Flash" },
+  { id: "deslizar-direita", name: "Deslizar →" },
+  { id: "descer", name: "Descer ↓" },
+  { id: "empurrar-cima", name: "Empurrar ↑" },
+  { id: "afastar", name: "Afastar" },
+  { id: "losango", name: "Losango" },
+  { id: "barras", name: "Barras" },
+  { id: "desfoque", name: "Desfoque" },
+  { id: "branco", name: "Estouro branco" },
+  { id: "iris", name: "Íris" },
+  { id: "espremer", name: "Espremer" },
+  { id: "dividir", name: "Dividir ao meio" },
+  { id: "tremor", name: "Tremor" },
 ];
 
 /** Tolerância para considerar dois clipes adjacentes (ms). */

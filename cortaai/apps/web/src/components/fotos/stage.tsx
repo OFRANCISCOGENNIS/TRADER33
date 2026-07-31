@@ -160,6 +160,21 @@ export function FotoStage() {
     fit();
   }, [fitRequest, imgW, imgH, fit]);
 
+  // Mantém a foto no lugar: quando a imagem inteira cabe no palco, ela fica
+  // centralizada e não pode ser arrastada para fora; com zoom maior que o
+  // palco, o arraste é limitado às bordas (a imagem não "escapa" da tela).
+  const clampPan = useCallback((px: number, py: number, z: number) => {
+    const el = containerRef.current;
+    const prev = getPreviewCanvas();
+    if (!el || !prev) return { x: px, y: py };
+    const axis = (p: number, size: number, box: number) =>
+      size <= box ? (box - size) / 2 : Math.min(0, Math.max(box - size, p));
+    return {
+      x: axis(px, prev.width * z, el.clientWidth),
+      y: axis(py, prev.height * z, el.clientHeight),
+    };
+  }, []);
+
   // ------------------------------------------------------------ wheel zoom
   // Native listener: React marks wheel handlers passive, so preventDefault
   // (needed to stop page scroll) requires addEventListener({ passive:false }).
@@ -175,11 +190,11 @@ export function FotoStage() {
       const nz = Math.max(0.05, Math.min(8, st.zoom * Math.pow(1.0015, -e.deltaY)));
       const k = nz / st.zoom;
       st.setZoom(nz);
-      st.setPan({ x: cx - (cx - st.pan.x) * k, y: cy - (cy - st.pan.y) * k });
+      st.setPan(clampPan(cx - (cx - st.pan.x) * k, cy - (cy - st.pan.y) * k, nz));
     }
     el.addEventListener("wheel", onWheel, { passive: false });
     return () => el.removeEventListener("wheel", onWheel);
-  }, []);
+  }, [clampPan]);
 
   // ------------------------------------------------------- space-to-pan key
   useEffect(() => {
@@ -282,8 +297,19 @@ export function FotoStage() {
           if (orig && orig.width === ctx.canvas.width && orig.height === ctx.canvas.height) {
             restoreStamp(ctx, orig, full.x, full.y, r * 1.4, st.brushStrength);
           }
+        } else if (st.liquifyMode === "reshape") {
+          // Barra bipolar: negativo comprime/afina, positivo expande. Zero = neutro.
+          if (st.reshapeStrength !== 0) {
+            liquifyStamp(
+              ctx, full.x, full.y, r * 1.4,
+              full.x - prevPt.x, full.y - prevPt.y,
+              st.reshapeStrength < 0 ? "encolher" : "expandir",
+              Math.abs(st.reshapeStrength),
+            );
+          }
         } else {
-          liquifyStamp(ctx, full.x, full.y, r * 1.4, full.x - prevPt.x, full.y - prevPt.y, st.liquifyMode, st.brushStrength);
+          // "empurrar": arrasta os pixels na direção do movimento do pincel.
+          liquifyStamp(ctx, full.x, full.y, r * 1.4, full.x - prevPt.x, full.y - prevPt.y, "empurrar", st.brushStrength);
         }
         break;
       default:
@@ -357,7 +383,7 @@ export function FotoStage() {
     }
     const drag = panDragRef.current;
     if (drag) {
-      s.setPan({ x: drag.px + (e.clientX - drag.sx), y: drag.py + (e.clientY - drag.sy) });
+      s.setPan(clampPan(drag.px + (e.clientX - drag.sx), drag.py + (e.clientY - drag.sy), zoom));
       return;
     }
     const stroke = strokeRef.current;
@@ -562,7 +588,7 @@ export function FotoStage() {
     const cx = el.clientWidth / 2;
     const cy = el.clientHeight / 2;
     st.setZoom(nz);
-    st.setPan({ x: cx - (cx - st.pan.x) * kk, y: cy - (cy - st.pan.y) * kk });
+    st.setPan(clampPan(cx - (cx - st.pan.x) * kk, cy - (cy - st.pan.y) * kk, nz));
   }
 }
 

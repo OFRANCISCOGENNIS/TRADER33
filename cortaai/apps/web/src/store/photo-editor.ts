@@ -38,10 +38,20 @@ import {
   type FilterState,
   type HslState,
   type LevelsState,
-  type LiquifyMode,
   type PhotoParams,
   type Histogram,
 } from "@/lib/photo-engine";
+
+/**
+ * Modo do Remodelar (liquify) na UI:
+ * - "empurrar": arrasta os pixels na direção do movimento do pincel.
+ * - "reshape":  expandir/comprimir por uma barra bipolar (centro = 0); valor
+ *               negativo comprime/afina, positivo expande.
+ * - "restaurar": desfaz a deformação, voltando aos pixels originais.
+ * O sentido expandir/encolher (LiquifyMode do engine) é derivado do sinal de
+ * reshapeStrength no momento da pincelada.
+ */
+export type LiquifyUiMode = "empurrar" | "reshape" | "restaurar";
 
 export const PREVIEW_MAX_PIXELS = 1_400_000; // live edits run at ~1.4MP
 const SNAPSHOT_MAX_PIXELS = 2_000_000; // undo snapshots capped at ~2MP
@@ -175,7 +185,8 @@ interface PhotoEditorState {
   tool: ToolId;
   brushSize: number; // preview px (radius)
   brushStrength: number; // 0..100
-  liquifyMode: LiquifyMode;
+  liquifyMode: LiquifyUiMode;
+  reshapeStrength: number; // -100..100 (barra bipolar: comprimir ⟷ expandir)
   eraseTolerance: number; // 0..100 (borracha de fundo)
   smoothAmount: number; // 0..100 (suavizar pele)
   cloneSource: { x: number; y: number } | null; // full-res coords
@@ -223,7 +234,8 @@ interface PhotoEditorState {
   setTool: (tool: ToolId) => void;
   setBrushSize: (v: number) => void;
   setBrushStrength: (v: number) => void;
-  setLiquifyMode: (m: LiquifyMode) => void;
+  setLiquifyMode: (m: LiquifyUiMode) => void;
+  setReshapeStrength: (v: number) => void;
   setEraseTolerance: (v: number) => void;
   setSmoothAmount: (v: number) => void;
   setCloneSource: (p: { x: number; y: number } | null) => void;
@@ -267,7 +279,8 @@ export const usePhotoEditorStore = create<PhotoEditorState>((set, get) => {
     tool: "mover",
     brushSize: 36,
     brushStrength: 60,
-    liquifyMode: "empurrar",
+    liquifyMode: "reshape",
+    reshapeStrength: 0,
     eraseTolerance: 32,
     smoothAmount: 55,
     cloneSource: null,
@@ -512,6 +525,7 @@ export const usePhotoEditorStore = create<PhotoEditorState>((set, get) => {
     setBrushSize: (v) => set({ brushSize: Math.max(4, Math.min(200, v)) }),
     setBrushStrength: (v) => set({ brushStrength: Math.max(1, Math.min(100, v)) }),
     setLiquifyMode: (m) => set({ liquifyMode: m }),
+    setReshapeStrength: (v) => set({ reshapeStrength: Math.max(-100, Math.min(100, Math.round(v))) }),
     setEraseTolerance: (v) => set({ eraseTolerance: v }),
     setSmoothAmount: (v) => set({ smoothAmount: v }),
     setCloneSource: (p) => set({ cloneSource: p }),
