@@ -21,9 +21,25 @@ const config: Config = {
           soft: "#a78bfa",
           hot: "#d946ef",
         },
+        // Paleta da landing redesenhada (dark, acento âmbar) — só a home usa.
+        cine: {
+          bg: "#08080A",
+          panel: "#0C0C10",
+          cell: "#0A0A0D",
+          line: "#17171b",
+          line2: "#1c1c21",
+          rule: "#22222a",
+          ink: "#F2F0EC",
+          mute: "#8A8780",
+          dim: "#65635E",
+          faint: "#45443F",
+          ghost: "#1E1E24",
+          accent: "#FF5A2C",
+        },
       },
       fontFamily: {
         sans: [
+          "var(--font-sans)",
           "ui-sans-serif",
           "system-ui",
           "-apple-system",
@@ -34,6 +50,9 @@ const config: Config = {
           "Arial",
           "sans-serif",
         ],
+        // Títulos da landing (sistema de design "Cinema").
+        display: ["var(--font-display)", "ui-sans-serif", "system-ui", "sans-serif"],
+        mono: ["var(--font-mono)", "ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
       },
       boxShadow: {
         glow: "0 0 40px -8px rgba(139,92,246,0.45)",

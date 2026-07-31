@@ -476,3 +476,19 @@ input[type="range"]::-moz-range-thumb {
     margin: 1.4cm;
   }
 }
+
+/* ---------------------------------------------------------------- landing
+   FAQ nativo (<details>): troca o sinal +/− e esconde o marcador padrão.
+   Sem JavaScript — o atributo name="faq" já mantém só um item aberto. */
+.faq-item > summary::-webkit-details-marker {
+  display: none;
+}
+.faq-item[open] .faq-sign {
+  color: #ff5a2c;
+}
+.faq-item[open] .faq-sign::after {
+  content: "–";
+}
+.faq-item:not([open]) .faq-sign::after {
+  content: "+";
+}

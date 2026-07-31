@@ -1,24 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import {
-  ArrowRight,
-  Captions,
-  Clapperboard,
-  Download,
-  Image as ImageIcon,
-  ImagePlus,
-  Palette,
-  Scissors,
-  SlidersHorizontal,
-  Sparkles,
-} from "lucide-react";
-import { Logo } from "@/components/logo";
-import { Accordion } from "@/components/ui/accordion";
-import { Badge } from "@/components/ui/badge";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { ArrowRight, Clapperboard, Download, Scissors } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "CortaAí — Editor de vídeo profissional 100% no navegador",
+  title: "CortaAí — editor de vídeo no navegador",
+  description:
+    "Timeline multi-trilha, legendas em 8 estilos, correção de cor e exportação 4K. Tudo no navegador, de graça.",
   alternates: { canonical: "/" },
 };
 
@@ -26,140 +13,142 @@ const FAQ_ITEMS = [
   {
     question: "Preciso instalar alguma coisa?",
     answer:
-      "Não. O CortaAí roda 100% no navegador: timeline multi-trilha, legendas, correção de cor, editor de fotos e estúdio de capa — tudo sem download, sem plugin e sem enviar seus arquivos para terceiros.",
+      "Não. Timeline, legendas, cor, editor de fotos e estúdio de capa rodam no navegador — sem download, sem plugin e sem enviar seus arquivos para terceiros.",
   },
   {
-    question: "Quais formatos de vídeo posso enviar?",
-    answer:
-      "MP4, MOV, MKV e WEBM de até 10 GB. Você também pode selecionar vários arquivos de uma vez e juntar tudo em um vídeo só, direto no navegador.",
+    question: "Quais formatos posso enviar?",
+    answer: "MP4, MOV, MKV e WEBM, até 10 GB por arquivo.",
   },
   {
     question: "Como funcionam as legendas?",
     answer:
-      "Você edita as legendas na própria timeline, escolhe entre 8 estilos visuais (Hormozi, karaokê, neon e mais) com safe zones de cada rede — e exporta o arquivo .srt junto com o vídeo.",
+      "O áudio vira texto no navegador; você escolhe um dos 8 estilos e exporta queimado ou em .srt.",
   },
   {
     question: "Qual a qualidade máxima de exportação?",
-    answer:
-      "Até 4K vertical (2160×3840) a 60fps em H.264 ou H.265, liberado para todo mundo. Nunca fazemos upscale: se a origem é 1080p, entregamos o melhor 1080p possível, com áudio normalizado em -14 LUFS.",
+    answer: "2160×3840 a 60 fps em H.264 ou H.265.",
   },
   {
-    question: "Os vídeos ficam com marca d'água do CortaAí?",
-    answer:
-      "Não. Seus vídeos saem sempre limpos e com o seu próprio kit de marca: logo, fontes e cores aplicados automaticamente — se você quiser.",
-  },
-  {
-    question: "Preciso pagar alguma coisa?",
-    answer:
-      "Não. O CortaAí é gratuito e sem limites: editor completo, legendas, editor de fotos, estúdio de capa e exportação, tudo liberado — sem cartão de crédito.",
+    question: "Tem marca d'água ou cobrança?",
+    answer: "Nenhuma das duas. Todos os recursos são gratuitos e sem marca d'água.",
   },
 ];
 
-const SOCIAL_PROOF = [
-  "PodCentral", "Estúdio Vira Clip", "Canal do Migue", "FinançasBR", "GamePlay+",
-  "Escola do Criador", "TreinoCast", "TechSemFio",
+const PILLARS = [
+  {
+    n: "01",
+    title: "Timeline multi-trilha",
+    desc: "Corte no playhead, marque entrada e saída, desfaça tudo. Atalhos de teclado iguais aos de editor profissional.",
+  },
+  {
+    n: "02",
+    title: "Legendas com estilo",
+    desc: "Oito estilos prontos, safe zone de cada rede e exportação em .srt. Um clique do áudio à legenda queimada.",
+  },
+  {
+    n: "03",
+    title: "Cor e áudio finos",
+    desc: "Curvas, filtros, chroma key, transições e normalização em −14 LUFS — o padrão que as redes esperam.",
+  },
 ];
 
-function FlowDemo() {
-  // Animated CSS demo of the product flow: Envie → Edite → Exporte.
+const STEPS = [
+  {
+    n: "1",
+    icon: Clapperboard,
+    title: "Envie seu vídeo",
+    desc: "Até 10 GB em MP4, MOV, MKV ou WEBM. Vários arquivos viram um só, no navegador.",
+  },
+  {
+    n: "2",
+    icon: Scissors,
+    title: "Edite na timeline",
+    desc: "Corte, ajuste cor e áudio, aplique legendas, textos, stickers e transições.",
+  },
+  {
+    n: "3",
+    icon: Download,
+    title: "Exporte em até 4K",
+    desc: "2160×3840 a 60 fps, com safe zones, legenda .srt, capa e descrição.",
+  },
+];
+
+const FEATURES = [
+  { title: "Timeline multi-trilha", desc: "Atalhos de teclado e histórico de versões automático." },
+  { title: "Legendas em 8 estilos", desc: "Hormozi, karaokê, neon e mais — com safe zones e .srt." },
+  { title: "Cor, efeitos e áudio", desc: "Curvas, chroma key, velocidade e normalização −14 LUFS." },
+  { title: "Editor de fotos", desc: "Ajustes, filtros, retoque e geometria sem trocar de aba." },
+  { title: "Estúdio de capa", desc: "Thumbnails com o seu kit de marca: logo, fontes e cores." },
+  { title: "Exportação até 4K", desc: "H.264 ou H.265, 60 fps, com .srt, capa e descrição." },
+];
+
+/** Marca da landing: quadrado âmbar com cantos alternados + nome. */
+function CineLogo({ size = 22 }: { size?: number }) {
   return (
-    <div className="relative mx-auto mt-14 w-full max-w-4xl" aria-hidden>
-      <div className="grid grid-cols-3 gap-3 sm:gap-6">
-        {/* Envio */}
-        <div className="rounded-2xl border border-line bg-surface-1/80 p-4 shadow-card backdrop-blur animate-float">
-          <div className="flex items-center gap-2 text-xs font-semibold text-violet-300">
-            <Clapperboard className="h-4 w-4" /> Seu vídeo
-          </div>
-          <div className="mt-3 space-y-2">
-            {[0, 1, 2].map((i) => (
-              <div key={i} className="flex items-center gap-2 rounded-lg bg-surface-2 p-1.5">
-                <div className="h-6 w-9 rounded-md bg-gradient-to-br from-violet-700 to-fuchsia-800" />
-                <div className="h-1.5 flex-1 rounded bg-white/10" />
-              </div>
-            ))}
-          </div>
-          <div className="relative mt-3 h-1 overflow-hidden rounded bg-surface-3">
-            <span className="absolute h-1 w-1/3 rounded bg-gradient-to-r from-violet-500 to-fuchsia-500 animate-flow-dot" />
-          </div>
-        </div>
-        {/* Timeline */}
-        <div className="rounded-2xl border border-line bg-surface-1/80 p-4 shadow-card backdrop-blur animate-float [animation-delay:600ms]">
-          <div className="flex items-center gap-2 text-xs font-semibold text-fuchsia-300">
-            <Scissors className="h-4 w-4" /> Timeline
-          </div>
-          <div className="mt-3 flex h-[68px] items-end gap-[3px]">
-            {[6, 12, 9, 18, 26, 20, 32, 24, 14, 30, 22, 10, 16, 8].map((h, i) => (
-              <span
-                key={i}
-                className="w-full rounded-sm bg-gradient-to-t from-violet-600/70 to-fuchsia-400/70 animate-pulse-soft"
-                style={{ height: `${h * 2}px`, animationDelay: `${i * 120}ms` }}
-              />
-            ))}
-          </div>
-          <div className="mt-3 flex items-center justify-between rounded-lg bg-surface-2 px-2 py-1.5 text-[10px] text-zinc-400">
-            <span>Legendas + cor + áudio</span>
-            <span className="rounded-full bg-emerald-500/15 px-1.5 font-bold text-emerald-300">ok</span>
-          </div>
-        </div>
-        {/* Export */}
-        <div className="rounded-2xl border border-line bg-surface-1/80 p-4 shadow-card backdrop-blur animate-float [animation-delay:1200ms]">
-          <div className="flex items-center gap-2 text-xs font-semibold text-emerald-300">
-            <Download className="h-4 w-4" /> Exportar 4K
-          </div>
-          <div className="mx-auto mt-3 h-[72px] w-11 rounded-lg border border-line bg-gradient-to-b from-violet-900/60 to-fuchsia-900/40 p-1">
-            <div className="h-2 w-full rounded-sm bg-white/15" />
-            <div className="mt-1 h-1.5 w-3/4 rounded-sm bg-white/10" />
-            <div className="mt-6 h-1.5 w-full rounded-sm bg-fuchsia-400/50" />
-          </div>
-          <div className="relative mt-3 h-1.5 overflow-hidden rounded bg-surface-3">
-            <span className="absolute inset-y-0 left-0 rounded bg-gradient-to-r from-emerald-500 to-emerald-300 animate-bar-grow" />
-          </div>
-          <p className="mt-1.5 text-center text-[10px] text-zinc-500">2160×3840 · 60fps · H.265</p>
-        </div>
-      </div>
-      {/* connectors */}
-      <div className="pointer-events-none absolute inset-x-0 top-1/2 hidden justify-around px-[16%] sm:flex">
-        <ArrowRight className="h-5 w-5 text-violet-500/70" />
-        <ArrowRight className="h-5 w-5 text-fuchsia-500/70" />
-      </div>
+    <div className="flex items-center gap-2.5">
+      <span
+        aria-hidden
+        className="rounded-[6px_2px_6px_2px] bg-cine-accent"
+        style={{ width: size, height: size }}
+      />
+      <span className="font-display text-[19px] font-bold tracking-[-0.02em]">CortaAí</span>
     </div>
   );
 }
 
-function BeforeAfter() {
+/** Demonstração animada do fluxo Envie → Edite → Exporte (CSS puro). */
+function FlowDemo() {
   return (
-    <div className="mx-auto grid max-w-4xl gap-8 md:grid-cols-2">
-      <div className="rounded-2xl border border-line bg-surface-1 p-6">
-        <Badge variant="danger">Antes</Badge>
-        <h3 className="mt-3 text-lg font-bold text-white">Editor pesado, instalação e renderizações lentas</h3>
-        <div className="mt-4 rounded-xl border border-line bg-surface-2 p-4" aria-hidden>
-          <div className="aspect-video rounded-lg bg-gradient-to-br from-zinc-800 to-zinc-900" />
-          <div className="mt-3 h-2 w-2/3 rounded bg-white/10" />
-          <div className="mt-2 h-2 w-1/3 rounded bg-white/5" />
-          <p className="mt-3 text-xs text-zinc-500">Instalação de 4 GB · projeto preso em um só computador</p>
+    <div className="grid w-full grid-cols-3 gap-3 sm:gap-5" aria-hidden>
+      <div className="animate-float rounded-2xl border border-cine-line2 bg-cine-panel p-4">
+        <div className="flex items-center gap-2 font-mono text-[11px] tracking-[0.06em] text-cine-accent">
+          <Clapperboard className="h-4 w-4" /> SEU VÍDEO
         </div>
-        <ul className="mt-4 space-y-1.5 text-sm text-zinc-500">
-          <li>• Programa pago e pesado para tarefas simples</li>
-          <li>• Legendas feitas na mão, uma a uma, sem estilo</li>
-          <li>• Capa e fotos editadas em outro aplicativo</li>
-        </ul>
-      </div>
-      <div className="rounded-2xl border border-violet-500/40 bg-gradient-to-b from-violet-950/40 to-surface-1 p-6 shadow-glow">
-        <Badge variant="success">Depois, com o CortaAí</Badge>
-        <h3 className="mt-3 text-lg font-bold text-white">Tudo no navegador, do upload à exportação</h3>
-        <div className="mt-4 grid grid-cols-3 gap-2" aria-hidden>
+        <div className="mt-3 space-y-2">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="rounded-lg border border-line bg-surface-2 p-1.5">
-              <div className="aspect-[9/16] rounded-md bg-gradient-to-b from-violet-800/70 to-fuchsia-900/50" />
-              <div className="mt-1.5 h-1.5 w-2/3 rounded bg-white/10" />
+            <div key={i} className="flex items-center gap-2 rounded-lg bg-white/[0.03] p-1.5">
+              <span className="h-6 w-9 rounded-md bg-cine-accent/70" />
+              <span className="h-1.5 flex-1 rounded bg-white/10" />
             </div>
           ))}
         </div>
-        <ul className="mt-4 space-y-1.5 text-sm text-zinc-300">
-          <li>• Timeline multi-trilha com atalhos de teclado</li>
-          <li>• Legendas em 8 estilos aplicadas em 1 clique</li>
-          <li>• Editor de fotos e estúdio de capa integrados</li>
-        </ul>
+        <div className="relative mt-3 h-1 overflow-hidden rounded bg-white/[0.06]">
+          <span className="animate-flow-dot absolute h-1 w-1/3 rounded bg-cine-accent" />
+        </div>
+      </div>
+
+      <div className="animate-float rounded-2xl border border-cine-line2 bg-cine-panel p-4 [animation-delay:600ms]">
+        <div className="flex items-center gap-2 font-mono text-[11px] tracking-[0.06em] text-cine-accent">
+          <Scissors className="h-4 w-4" /> TIMELINE
+        </div>
+        <div className="mt-3 flex h-[68px] items-end gap-[3px]">
+          {[6, 12, 9, 18, 26, 20, 32, 24, 14, 30, 22, 10, 16, 8].map((h, i) => (
+            <span
+              key={i}
+              className="animate-pulse-soft w-full rounded-sm bg-gradient-to-t from-cine-accent/40 to-cine-accent"
+              style={{ height: `${h * 2}px`, animationDelay: `${i * 120}ms` }}
+            />
+          ))}
+        </div>
+        <div className="mt-3 flex items-center justify-between rounded-lg bg-white/[0.03] px-2 py-1.5 text-[10px] text-cine-mute">
+          <span>Legendas + cor + áudio</span>
+          <span className="font-mono text-cine-accent">ok</span>
+        </div>
+      </div>
+
+      <div className="animate-float rounded-2xl border border-cine-line2 bg-cine-panel p-4 [animation-delay:1200ms]">
+        <div className="flex items-center gap-2 font-mono text-[11px] tracking-[0.06em] text-cine-accent">
+          <Download className="h-4 w-4" /> EXPORTAR 4K
+        </div>
+        <div className="mx-auto mt-3 h-[72px] w-11 rounded-lg border border-cine-line2 bg-black/40 p-1">
+          <span className="block h-2 w-full rounded-sm bg-white/15" />
+          <span className="mt-1 block h-1.5 w-3/4 rounded-sm bg-white/10" />
+          <span className="mt-6 block h-1.5 w-full rounded-sm bg-cine-accent/60" />
+        </div>
+        <div className="relative mt-3 h-1.5 overflow-hidden rounded bg-white/[0.06]">
+          <span className="animate-bar-grow absolute inset-y-0 left-0 rounded bg-cine-accent" />
+        </div>
+        <p className="mt-1.5 text-center font-mono text-[10px] text-cine-dim">2160×3840 · 60fps</p>
       </div>
     </div>
   );
@@ -167,295 +156,256 @@ function BeforeAfter() {
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen">
-      {/* Header */}
-      <header className="sticky top-0 z-40 border-b border-line bg-surface/80 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-          <Logo />
-          <nav className="hidden items-center gap-6 text-sm text-zinc-400 md:flex" aria-label="Navegação principal">
-            <a href="#como-funciona" className="hover:text-white">Como funciona</a>
-            <a href="#recursos" className="hover:text-white">Recursos</a>
-            <a href="#faq" className="hover:text-white">Dúvidas</a>
+    <div className="min-h-screen bg-cine-bg font-sans text-cine-ink">
+      <div className="mx-auto max-w-[1280px]">
+        {/* ---------------------------------------------------------- nav */}
+        <header className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-cine-line bg-cine-bg/90 px-5 py-4 backdrop-blur-xl sm:px-14 sm:py-6">
+          <CineLogo />
+          <nav className="hidden gap-8 text-[15px] text-cine-mute md:flex" aria-label="Navegação principal">
+            <a href="#como-funciona" className="transition-opacity hover:opacity-70">Como funciona</a>
+            <a href="#recursos" className="transition-opacity hover:opacity-70">Recursos</a>
+            <a href="#faq" className="transition-opacity hover:opacity-70">Dúvidas</a>
           </nav>
-          <div className="flex items-center gap-2">
-            <ThemeToggle />
-            <Link
-              href="/app"
-              className="rounded-xl px-4 py-2 text-sm font-medium text-zinc-300 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
-            >
-              Entrar
-            </Link>
-            <Link
-              href="/app"
-              className="rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-glow transition-all hover:from-violet-500 hover:to-fuchsia-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
-            >
-              Começar grátis
-            </Link>
-          </div>
-        </div>
-      </header>
+          <Link
+            href="/app"
+            className="rounded-full bg-cine-ink px-5 py-2.5 text-[15px] font-semibold text-cine-bg transition-opacity hover:opacity-85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cine-accent"
+          >
+            Abrir o editor
+          </Link>
+        </header>
 
-      <main>
-        {/* Hero */}
-        <section className="relative overflow-hidden px-4 pb-24 pt-20 text-center">
-          <div className="mx-auto max-w-3xl">
-            <Badge variant="accent" className="mb-6">
-              <Sparkles className="h-3 w-3" /> Editor de vídeo profissional no navegador
-            </Badge>
-            <h1 className="text-4xl font-extrabold leading-tight tracking-tight text-white sm:text-6xl">
-              Edite. Legende.{" "}
-              <span className="bg-gradient-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent">
-                Exporte em 4K.
-              </span>{" "}
-              Sem instalar nada.
-            </h1>
-            <p className="mx-auto mt-6 max-w-2xl text-lg text-zinc-400">
-              O CortaAí é um editor de vídeo completo que roda 100% no navegador: timeline
-              multi-trilha, legendas com estilo, correção de cor, editor de fotos e estúdio de
-              capa — prontos para TikTok, Reels e Shorts.
+        <main>
+          {/* ------------------------------------------------------- hero */}
+          <section className="flex flex-col items-center px-5 pt-14 text-center sm:px-14 sm:pt-24">
+            <p className="inline-flex items-center gap-2.5 rounded-full border border-cine-rule py-1.5 pl-2.5 pr-3.5 font-mono text-[12px] tracking-[0.04em] text-cine-mute">
+              <span className="h-1.5 w-1.5 rounded-full bg-cine-accent" />
+              Roda no navegador · nada para instalar
             </p>
-            <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <h1 className="mt-7 max-w-[1000px] text-balance font-display text-[44px] font-extrabold leading-[0.92] tracking-[-0.045em] sm:text-[104px]">
+              Edite. Legende.
+              <br />
+              Exporte em <span className="text-cine-accent">4K</span>.
+            </h1>
+            <p className="mt-6 max-w-[620px] text-pretty text-[17px] leading-[1.55] text-cine-mute sm:text-[20px]">
+              Timeline multi-trilha, legendas com estilo, correção de cor e estúdio de capa — um
+              editor de vídeo inteiro dentro de uma aba do navegador.
+            </p>
+            <div className="mt-9 flex flex-wrap justify-center gap-3">
               <Link
                 href="/app"
-                className="inline-flex h-12 items-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-7 text-base font-semibold text-white shadow-glow transition-all hover:from-violet-500 hover:to-fuchsia-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
+                className="rounded-full bg-cine-accent px-7 py-4 text-[16px] font-semibold text-cine-bg transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cine-ink"
               >
-                Editar meu primeiro vídeo grátis <ArrowRight className="h-4 w-4" aria-hidden />
+                Editar meu primeiro vídeo
               </Link>
-              <Link
-                href="/app"
-                className="inline-flex h-12 items-center gap-2 rounded-xl border border-line px-7 text-base font-medium text-zinc-300 transition-colors hover:border-violet-500/50 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
+              <a
+                href="#recursos"
+                className="rounded-full border border-cine-rule px-7 py-4 text-[16px] font-semibold transition-colors hover:border-cine-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cine-accent"
               >
-                Ver demonstração
-              </Link>
+                Ver recursos
+              </a>
             </div>
-            <p className="mt-4 text-xs text-zinc-600">Grátis e sem limites · sem cartão de crédito · sem instalar nada</p>
-          </div>
-          <FlowDemo />
-        </section>
+            <p className="mt-4 font-mono text-[12px] tracking-[0.04em] text-cine-dim">
+              grátis · sem limites · sem cartão
+            </p>
 
-        {/* Social proof */}
-        <section className="border-y border-line bg-surface-1/50 py-8" aria-label="Criadores que usam o CortaAí">
-          <p className="mb-5 text-center text-xs font-medium uppercase tracking-widest text-zinc-600">
-            Usado por mais de 12 mil criadores e estúdios
-          </p>
-          <div className="relative overflow-hidden">
-            <div className="flex w-max animate-marquee gap-14 px-7">
-              {[...SOCIAL_PROOF, ...SOCIAL_PROOF].map((name, i) => (
-                <span key={i} className="whitespace-nowrap text-lg font-bold text-zinc-600">
-                  {name}
-                </span>
-              ))}
+            <div className="mt-14 w-full max-w-[1080px] rounded-[18px] border border-cine-line2 bg-gradient-to-b from-[#101014] to-cine-bg p-2.5 sm:p-4">
+              <FlowDemo />
             </div>
-          </div>
-        </section>
+          </section>
 
-        {/* Editor highlight */}
-        <section className="px-4 py-24">
-          <div className="mx-auto max-w-6xl">
-            <div className="mx-auto max-w-2xl text-center">
-              <Badge variant="accent" className="mb-4"><Scissors className="h-3 w-3" /> Editor completo</Badge>
-              <h2 className="text-3xl font-extrabold text-white sm:text-4xl">
-                Poder de estúdio, leveza de navegador
+          {/* --------------------------------------------------- 3 pilares */}
+          <section className="mt-16 border-t border-cine-line px-5 py-16 sm:mt-24 sm:px-14 sm:py-20">
+            <div className="mb-10 flex flex-col justify-between gap-6 sm:mb-14 lg:flex-row lg:items-end">
+              <h2 className="max-w-[620px] font-display text-[32px] font-bold leading-[1.02] tracking-[-0.035em] sm:text-[52px]">
+                Poder de estúdio,
+                <br />
+                leveza de navegador.
               </h2>
-              <p className="mt-4 text-zinc-400">
-                Corte, divida e reorganize clipes na timeline multi-trilha, ajuste cor e áudio,
-                aplique legendas com estilo e veja tudo em tempo real — no desktop e no celular.
+              <p className="max-w-[360px] text-pretty text-[17px] leading-[1.6] text-cine-mute">
+                Corte, ajuste e legende em tempo real. O que antes exigia 4 GB de instalação agora
+                abre em um clique.
               </p>
             </div>
-            <div className="mt-12 grid gap-6 md:grid-cols-3">
-              {[
-                {
-                  icon: <SlidersHorizontal className="h-5 w-5" />,
-                  title: "Timeline multi-trilha",
-                  desc: "Corte no playhead, marque entrada/saída, desfaça e refaça com atalhos de teclado profissionais.",
-                },
-                {
-                  icon: <Captions className="h-5 w-5" />,
-                  title: "Legendas com estilo",
-                  desc: "8 estilos prontos (Hormozi, karaokê, neon...) com safe zones de cada rede e exportação .srt.",
-                },
-                {
-                  icon: <Palette className="h-5 w-5" />,
-                  title: "Cor e áudio finos",
-                  desc: "Curvas, filtros, chroma key, velocidade, transições e normalização de áudio em -14 LUFS.",
-                },
-              ].map((f) => (
-                <div key={f.title} className="rounded-2xl border border-line bg-surface-1 p-6 shadow-card">
-                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-violet-500/15 text-violet-300">
-                    {f.icon}
-                  </span>
-                  <h3 className="mt-4 font-bold text-white">{f.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-zinc-400">{f.desc}</p>
+            <div className="grid gap-5 md:grid-cols-3">
+              {PILLARS.map((p) => (
+                <div
+                  key={p.n}
+                  className="flex min-h-[250px] flex-col gap-3 rounded-2xl border border-cine-line2 bg-cine-panel p-8"
+                >
+                  <span className="font-mono text-[12px] tracking-[0.08em] text-cine-accent">{p.n}</span>
+                  <h3 className="mt-1.5 font-display text-[25px] font-semibold tracking-[-0.02em]">{p.title}</h3>
+                  <p className="text-[16px] leading-[1.6] text-cine-mute">{p.desc}</p>
                 </div>
               ))}
             </div>
-          </div>
-        </section>
+          </section>
 
-        {/* Before / After */}
-        <section className="border-t border-line bg-surface-1/40 px-4 py-24">
-          <div className="mx-auto mb-12 max-w-2xl text-center">
-            <h2 className="text-3xl font-extrabold text-white sm:text-4xl">
-              Do arquivo bruto ao vídeo pronto, em uma aba
+          {/* -------------------------------------------------- antes/depois */}
+          <section className="border-t border-cine-line px-5 py-16 sm:px-14 sm:py-20">
+            <h2 className="mb-11 max-w-[700px] font-display text-[32px] font-bold leading-[1.02] tracking-[-0.035em] sm:text-[52px]">
+              Do arquivo bruto ao vídeo pronto, em uma aba.
             </h2>
-          </div>
-          <BeforeAfter />
-        </section>
-
-        {/* Como funciona */}
-        <section id="como-funciona" className="px-4 py-24">
-          <div className="mx-auto max-w-5xl">
-            <div className="mx-auto mb-14 max-w-2xl text-center">
-              <h2 className="text-3xl font-extrabold text-white sm:text-4xl">Como funciona</h2>
-              <p className="mt-3 text-zinc-400">Três passos entre o arquivo bruto e o vídeo publicado.</p>
+            <div className="grid gap-5 md:grid-cols-2">
+              <div className="rounded-2xl border border-cine-line2 p-9 opacity-60">
+                <p className="font-mono text-[12px] uppercase tracking-[0.1em] text-cine-mute">Antes</p>
+                <h3 className="mb-5 mt-3.5 font-display text-[28px] font-semibold tracking-[-0.025em]">
+                  Instalar 4 GB e esperar renderizar
+                </h3>
+                <ul className="flex flex-col gap-3 text-[16px] text-cine-mute">
+                  {[
+                    "Programa pago e pesado para tarefas simples",
+                    "Legenda feita na mão, uma linha por vez",
+                    "Capa e fotos em outro aplicativo",
+                  ].map((t) => (
+                    <li key={t} className="flex gap-3">
+                      <span className="text-cine-dim">—</span>
+                      {t}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="rounded-2xl border border-cine-accent bg-[#0F0B09] p-9">
+                <p className="font-mono text-[12px] uppercase tracking-[0.1em] text-cine-accent">Depois</p>
+                <h3 className="mb-5 mt-3.5 font-display text-[28px] font-semibold tracking-[-0.025em]">
+                  Abrir a aba e exportar
+                </h3>
+                <ul className="flex flex-col gap-3 text-[16px] text-[#CFCBC2]">
+                  {[
+                    "Timeline multi-trilha com atalhos de teclado",
+                    "Oito estilos de legenda aplicados em 1 clique",
+                    "Editor de fotos e estúdio de capa integrados",
+                  ].map((t) => (
+                    <li key={t} className="flex gap-3">
+                      <span className="text-cine-accent">+</span>
+                      {t}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
-            <ol className="grid gap-6 md:grid-cols-3">
-              {[
-                {
-                  n: "1",
-                  icon: <Clapperboard className="h-6 w-6" />,
-                  title: "Envie seu vídeo",
-                  desc: "Upload de até 10 GB (MP4, MOV, MKV, WEBM). Vários arquivos? Junte tudo em um vídeo só, no navegador.",
-                },
-                {
-                  n: "2",
-                  icon: <Scissors className="h-6 w-6" />,
-                  title: "Edite na timeline",
-                  desc: "Corte e divida clipes, ajuste cor e áudio, aplique legendas, textos, stickers e transições.",
-                },
-                {
-                  n: "3",
-                  icon: <Download className="h-6 w-6" />,
-                  title: "Exporte em até 4K",
-                  desc: "Formato de cada rede com safe zones — e exportação com legenda .srt, capa e descrição .txt.",
-                },
-              ].map((s) => (
-                <li key={s.n} className="relative rounded-2xl border border-line bg-surface-1 p-7 shadow-card">
-                  <span className="absolute -top-4 left-7 flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 text-sm font-bold text-white">
+          </section>
+
+          {/* ------------------------------------------------- como funciona */}
+          <section id="como-funciona" className="border-t border-cine-line px-5 py-16 sm:px-14 sm:py-20">
+            <div className="mb-12 flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
+              <h2 className="font-display text-[32px] font-bold tracking-[-0.035em] sm:text-[52px]">
+                Como funciona
+              </h2>
+              <p className="max-w-[340px] text-[17px] text-cine-mute">
+                Três passos entre o arquivo bruto e o vídeo publicado.
+              </p>
+            </div>
+            <ol className="grid border-t border-cine-rule md:grid-cols-3">
+              {STEPS.map((s, i) => (
+                <li
+                  key={s.n}
+                  className={`border-t border-cine-rule pt-8 md:border-t-0 ${
+                    i < 2 ? "md:border-r md:pr-8" : "md:pl-8"
+                  } ${i === 1 ? "md:px-8" : ""}`}
+                >
+                  <span
+                    className={`font-display text-[72px] font-extrabold leading-none tracking-[-0.04em] ${
+                      i === 2 ? "text-cine-accent" : "text-cine-ghost"
+                    }`}
+                  >
                     {s.n}
                   </span>
-                  <span className="mt-2 inline-flex text-fuchsia-300">{s.icon}</span>
-                  <h3 className="mt-3 text-lg font-bold text-white">{s.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-zinc-400">{s.desc}</p>
+                  <h3 className="mb-2.5 mt-4 font-display text-[24px] font-semibold tracking-[-0.02em]">
+                    {s.title}
+                  </h3>
+                  <p className="pb-8 text-[16px] leading-[1.6] text-cine-mute">{s.desc}</p>
                 </li>
               ))}
             </ol>
-            <div className="mt-14 text-center">
-              <Link
-                href="/app"
-                className="inline-flex h-12 items-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-7 text-base font-semibold text-white shadow-glow transition-all hover:from-violet-500 hover:to-fuchsia-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
-              >
-                Quero testar agora <ArrowRight className="h-4 w-4" aria-hidden />
-              </Link>
-            </div>
-          </div>
-        </section>
+          </section>
 
-        {/* Recursos */}
-        <section id="recursos" className="border-t border-line bg-surface-1/40 px-4 py-24">
-          <div className="mx-auto max-w-5xl">
-            <div className="mx-auto mb-12 max-w-2xl text-center">
-              <Badge variant="accent" className="mb-4"><Sparkles className="h-3 w-3" /> Tudo incluído</Badge>
-              <h2 className="text-3xl font-extrabold text-white sm:text-4xl">Tudo o que você precisa, de graça</h2>
-              <p className="mt-3 text-zinc-400">
-                Sem planos, sem cota de minutos, sem marca d&apos;água. Todos os recursos liberados para todos os criadores.
+          {/* ----------------------------------------------------- recursos */}
+          <section id="recursos" className="border-t border-cine-line px-5 py-16 sm:px-14 sm:py-20">
+            <div className="mb-12 text-center">
+              <h2 className="font-display text-[32px] font-bold tracking-[-0.035em] sm:text-[52px]">
+                Tudo liberado, de graça
+              </h2>
+              <p className="mx-auto mt-3.5 max-w-[520px] text-[18px] text-cine-mute">
+                Sem plano, sem cota de minutos, sem marca d&apos;água.
               </p>
             </div>
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {[
-                {
-                  icon: <Scissors className="h-5 w-5" />,
-                  title: "Timeline multi-trilha",
-                  desc: "Corte, divida e reorganize clipes com atalhos de teclado e histórico de versões automático.",
-                },
-                {
-                  icon: <Captions className="h-5 w-5" />,
-                  title: "Legendas em 8 estilos",
-                  desc: "Hormozi, karaokê, neon e mais — aplicadas em 1 clique, com safe zones e exportação .srt.",
-                },
-                {
-                  icon: <Palette className="h-5 w-5" />,
-                  title: "Cor, efeitos e áudio",
-                  desc: "Curvas, filtros, chroma key, transições, velocidade e normalização de áudio em -14 LUFS.",
-                },
-                {
-                  icon: <ImagePlus className="h-5 w-5" />,
-                  title: "Editor de fotos",
-                  desc: "Ajustes, filtros, retoque, geometria e elementos — para tratar imagens sem sair do CortaAí.",
-                },
-                {
-                  icon: <ImageIcon className="h-5 w-5" />,
-                  title: "Estúdio de capa",
-                  desc: "Desenhe capas e thumbnails com texto, formas e o seu kit de marca (logo, fontes, cores).",
-                },
-                {
-                  icon: <Download className="h-5 w-5" />,
-                  title: "Exportação até 4K",
-                  desc: "Vertical 2160×3840 a 60fps em H.264/H.265, com .srt, capa e descrição — sem marca d'água.",
-                },
-              ].map((f) => (
-                <div key={f.title} className="rounded-2xl border border-line bg-surface-1 p-6 shadow-card">
-                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-violet-500/15 text-violet-300">
-                    {f.icon}
-                  </span>
-                  <h3 className="mt-4 font-bold text-white">{f.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-zinc-400">{f.desc}</p>
+            <div className="grid gap-px overflow-hidden rounded-2xl border border-cine-line2 bg-cine-line2 md:grid-cols-3">
+              {FEATURES.map((f) => (
+                <div key={f.title} className="bg-cine-cell p-8">
+                  <h3 className="mb-2 font-display text-[20px] font-semibold">{f.title}</h3>
+                  <p className="text-[15px] leading-[1.6] text-cine-mute">{f.desc}</p>
                 </div>
               ))}
             </div>
-            <div className="mt-14 text-center">
-              <Link
-                href="/app"
-                className="inline-flex h-12 items-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-7 text-base font-semibold text-white shadow-glow transition-all hover:from-violet-500 hover:to-fuchsia-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
-              >
-                Criar conta grátis <ArrowRight className="h-4 w-4" aria-hidden />
-              </Link>
-              <p className="mt-4 text-xs text-zinc-600">Sem cartão de crédito · sem limites</p>
-            </div>
-          </div>
-        </section>
+          </section>
 
-        {/* FAQ */}
-        <section id="faq" className="px-4 py-24">
-          <div className="mx-auto max-w-3xl">
-            <div className="mx-auto mb-10 max-w-2xl text-center">
-              <h2 className="text-3xl font-extrabold text-white sm:text-4xl">Perguntas frequentes</h2>
+          {/* ---------------------------------------------------------- faq */}
+          <section
+            id="faq"
+            className="grid gap-10 border-t border-cine-line px-5 py-16 sm:px-14 sm:py-20 lg:grid-cols-[340px_1fr] lg:gap-16"
+          >
+            <h2 className="font-display text-[32px] font-bold leading-[1.05] tracking-[-0.035em] sm:text-[44px]">
+              Perguntas frequentes
+            </h2>
+            <div className="flex flex-col">
+              {FAQ_ITEMS.map((item, i) => (
+                <details
+                  key={item.question}
+                  name="faq"
+                  open={i === 0}
+                  className={`faq-item border-t border-cine-rule py-5 ${
+                    i === FAQ_ITEMS.length - 1 ? "border-b" : ""
+                  }`}
+                >
+                  <summary className="flex cursor-pointer list-none justify-between gap-5 text-[19px] font-semibold">
+                    {item.question}
+                    <span aria-hidden className="faq-sign shrink-0 text-cine-dim" />
+                  </summary>
+                  <p className="mt-3.5 max-w-[620px] text-[16px] leading-[1.65] text-cine-mute">
+                    {item.answer}
+                  </p>
+                </details>
+              ))}
             </div>
-            <Accordion items={FAQ_ITEMS} />
-            <div className="mt-14 rounded-2xl border border-violet-500/40 bg-gradient-to-r from-violet-950/60 to-fuchsia-950/40 p-10 text-center shadow-glow">
-              <h2 className="text-2xl font-extrabold text-white">Seu próximo vídeo já está gravado.</h2>
-              <p className="mt-2 text-zinc-400">Ele só precisa ser editado, legendado e exportado.</p>
-              <Link
-                href="/app"
-                className="mt-6 inline-flex h-12 items-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-7 text-base font-semibold text-white shadow-glow transition-all hover:from-violet-500 hover:to-fuchsia-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
-              >
-                Começar grátis agora <ArrowRight className="h-4 w-4" aria-hidden />
-              </Link>
-            </div>
-          </div>
-        </section>
-      </main>
+          </section>
 
-      {/* Footer */}
-      <footer className="border-t border-line bg-surface-1/60 px-4 py-12">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-6 md:flex-row">
-          <div>
-            <Logo />
-            <p className="mt-2 max-w-xs text-xs text-zinc-600">
-              Editor de vídeo profissional 100% no navegador. Feito no Brasil para criadores do mundo todo.
-            </p>
+          {/* ---------------------------------------------------------- cta */}
+          <section className="bg-cine-accent px-5 py-20 text-center text-cine-bg sm:px-14 sm:py-28">
+            <h2 className="text-balance font-display text-[40px] font-extrabold leading-[0.98] tracking-[-0.045em] sm:text-[76px]">
+              Seu próximo vídeo
+              <br />
+              já está gravado.
+            </h2>
+            <p className="mt-5 text-[20px] opacity-75">Só falta cortar, legendar e exportar.</p>
+            <Link
+              href="/app"
+              className="mt-9 inline-flex items-center gap-2 rounded-full bg-cine-bg px-9 py-[18px] text-[17px] font-semibold text-cine-accent transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cine-bg"
+            >
+              Abrir o editor agora <ArrowRight className="h-4 w-4" aria-hidden />
+            </Link>
+          </section>
+        </main>
+
+        {/* ------------------------------------------------------- footer */}
+        <footer className="border-t border-cine-line px-5 sm:px-14">
+          <div className="flex flex-col justify-between gap-8 py-12 sm:flex-row">
+            <div className="max-w-[340px]">
+              <CineLogo size={18} />
+              <p className="mt-3 text-[14px] leading-[1.6] text-cine-dim">
+                Editor de vídeo no navegador. Feito no Brasil para criadores do mundo todo.
+              </p>
+            </div>
+            <nav className="flex flex-wrap gap-8 text-[14px] text-cine-mute" aria-label="Links do rodapé">
+              <a href="#como-funciona" className="transition-opacity hover:opacity-70">Como funciona</a>
+              <a href="#recursos" className="transition-opacity hover:opacity-70">Recursos</a>
+              <Link href="/app" className="transition-opacity hover:opacity-70">Abrir o editor</Link>
+            </nav>
           </div>
-          <nav className="flex flex-wrap items-center gap-6 text-sm text-zinc-500" aria-label="Links do rodapé">
-            <a href="#como-funciona" className="hover:text-white">Como funciona</a>
-            <a href="#recursos" className="hover:text-white">Recursos</a>
-            <Link href="/app" className="hover:text-white">Entrar</Link>
-            <Link href="/app" className="hover:text-white">Criar conta</Link>
-          </nav>
-        </div>
-        <p className="mt-8 text-center text-xs text-zinc-700">
-          © 2026 CortaAí Tecnologia Ltda. Todos os direitos reservados.
-        </p>
-      </footer>
+          <p className="pb-10 font-mono text-[11px] tracking-[0.04em] text-cine-faint">
+            © 2026 CortaAí Tecnologia Ltda.
+          </p>
+        </footer>
+      </div>
     </div>
   );
 }

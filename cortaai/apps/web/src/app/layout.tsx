@@ -1,7 +1,17 @@
 import type { Metadata, Viewport } from "next";
+import { Bricolage_Grotesque, Instrument_Sans, JetBrains_Mono } from "next/font/google";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
+
+// Fontes do sistema de design (auto-hospedadas no build — sem CDN externo).
+const display = Bricolage_Grotesque({
+  subsets: ["latin"],
+  variable: "--font-display",
+  display: "swap",
+});
+const sans = Instrument_Sans({ subsets: ["latin"], variable: "--font-sans", display: "swap" });
+const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono", display: "swap" });
 
 // Runs before first paint to avoid a theme flash (FOUC). Reads the persisted
 // zustand shape {state:{theme}} from localStorage, resolves "system" via
@@ -54,7 +64,12 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR" className="dark" data-theme="dark" suppressHydrationWarning>
+    <html
+      lang="pt-BR"
+      className={`dark ${display.variable} ${sans.variable} ${mono.variable}`}
+      data-theme="dark"
+      suppressHydrationWarning
+    >
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>
