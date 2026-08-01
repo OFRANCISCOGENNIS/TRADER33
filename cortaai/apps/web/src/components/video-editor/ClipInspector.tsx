@@ -529,7 +529,7 @@ export function ClipInspector() {
               <Switch label="Reduzir ruído (corta ronco e chiado)" checked={clip.audioFx?.denoise === true} onChange={(on) => patchAudioFx({ denoise: on || undefined })} />
               <Switch label="Aprimorar voz (presença + compressão)" checked={clip.audioFx?.voice === true} onChange={(on) => patchAudioFx({ voice: on || undefined })} />
               {(clip.audioFx?.denoise || clip.audioFx?.voice) && (
-                <p className="text-[10px] text-zinc-600">Aplicado no arquivo exportado (o preview toca sem o tratamento).</p>
+                <p className="text-[10px] text-zinc-600">Toca na prévia e sai igual no arquivo exportado.</p>
               )}
             </div>
           </Section>
@@ -615,7 +615,7 @@ export function ClipInspector() {
               onChange={(on) => patchToneFx({ phone: on || undefined })}
             />
             <p className="text-[10px] text-zinc-600">
-              Reverberação, eco, compressor e tom são aplicados no arquivo exportado (o preview toca sem eles).
+              Reverberação, eco, compressor e tom tocam na prévia com o mesmo processamento da exportação.
             </p>
           </Section>
         </>
