@@ -81,7 +81,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   // Editor e Estúdio multitrilha são full-bleed (estilo CapCut): sem sidebar/
   // topbar — a tela de edição ocupa a viewport inteira.
-  const isEditor = pathname?.startsWith("/app/editor") || pathname?.startsWith("/app/estudio");
+  // /app/editor virou só uma ponte para o Estúdio: renderiza dentro do shell
+  // normal (com menu), para o usuário não ficar sem saída se algo falhar.
+  const isEditor = pathname?.startsWith("/app/estudio");
 
   if (isEditor) {
     return (

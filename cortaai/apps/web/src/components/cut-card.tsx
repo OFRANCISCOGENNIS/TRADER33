@@ -83,20 +83,17 @@ export function CutCard({ cut }: { cut: Cut }) {
       )}
 
       <div className="mt-4 flex items-center gap-2">
-        <Link
-          href={`/app/editor?cut=${cut.id}`}
-          className="inline-flex h-8 flex-1 items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-3 text-xs font-medium text-white shadow-glow transition-all hover:from-violet-500 hover:to-fuchsia-500 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
-        >
-          <Pencil className="h-3.5 w-3.5" aria-hidden /> Abrir no editor
-        </Link>
         <button
           onClick={() => void toStudio()}
-          aria-label="Abrir no Estúdio PRO"
-          title="Abrir no Estúdio PRO (multitrilha)"
           disabled={studioBusy}
-          className="inline-flex h-8 w-8 items-center justify-center rounded-xl text-zinc-300 transition-colors hover:bg-white/5 hover:text-white disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
+          className="inline-flex h-8 flex-1 items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-3 text-xs font-medium text-white shadow-glow transition-all hover:from-violet-500 hover:to-fuchsia-500 active:scale-[0.98] disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
         >
-          {studioBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden /> : <Clapperboard className="h-3.5 w-3.5" aria-hidden />}
+          {studioBusy ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
+          ) : (
+            <Pencil className="h-3.5 w-3.5" aria-hidden />
+          )}
+          Abrir no editor
         </button>
         <Link
           href={`/app/capa/editor?cut=${cut.id}`}
