@@ -37,7 +37,7 @@ export interface ClipTransform {
 }
 
 export interface EffectRef {
-  id: string; // id do efeito (catálogo em edit-visuals)
+  id: string; // id do efeito (catálogo em video-editor/filters)
   intensity: number; // 0..1
 }
 

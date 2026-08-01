@@ -6,7 +6,7 @@
 // num OfflineAudioContext, respeitando posição na timeline, trim, velocidade e
 // volume por clipe. Sem servidor, sem chave.
 
-import { isExportSupported, pickCodecs, type ExportProgress, type ExportResult } from "@/lib/export-render";
+import { isExportSupported, pickCodecs, type ExportProgress, type ExportResult } from "./codecs";
 import { ensureBgVideoSegmenter, getBgSegFrameFailures, resetBgSegFrameFailures } from "@/lib/ai/video-segmenter";
 import { getMedia } from "@/lib/media-store";
 import { drawComposite, type Drawable } from "./engine";
