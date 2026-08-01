@@ -12,6 +12,7 @@ import { drawComposite, type Drawable } from "@/lib/video-editor/engine";
 import { ensureBgVideoSegmenter } from "@/lib/ai/video-segmenter";
 import type { Clip } from "@/lib/video-editor/model";
 import { sourceObjectUrl, type MediaSource } from "@/lib/video-editor/media-registry";
+import { PreviewAudioGraph } from "@/lib/video-editor/preview-audio";
 import { audioGainAt, clipAtTime, clipEndMs, projectDurationMs, sourceTimeForClip, tracksForRender } from "@/lib/video-editor/timeline-math";
 import { useVideoEditor } from "@/store/video-editor";
 
@@ -58,6 +59,12 @@ export function PreviewStage() {
   const videosRef = useRef<Map<string, HTMLVideoElement>>(new Map());
   const imagesRef = useRef<Map<string, HTMLImageElement>>(new Map());
   const audiosRef = useRef<Map<string, HTMLAudioElement>>(new Map());
+  // Grafo Web Audio: aplica na prévia a MESMA cadeia de efeitos da exportação.
+  const audioGraphRef = useRef<PreviewAudioGraph | null>(null);
+  if (audioGraphRef.current === null && typeof window !== "undefined") {
+    audioGraphRef.current = new PreviewAudioGraph();
+  }
+  useEffect(() => () => audioGraphRef.current?.dispose(), []);
   const rafRef = useRef<number | null>(null);
   const [playing, setPlaying] = useState(false);
   const [stageSize, setStageSize] = useState<{ w: number; h: number } | null>(null);
@@ -124,7 +131,7 @@ export function PreviewStage() {
   // sincroniza as trilhas de ÁUDIO (música) ao playhead durante a reprodução
   const syncAudio = useCallback(
     (head: number, isPlaying: boolean) => {
-      const activeBySource = new Map<string, { timeSec: number; speed: number; volume: number }>();
+      const activeBySource = new Map<string, { timeSec: number; speed: number; volume: number; clip: Clip }>();
       if (isPlaying) {
         for (const track of project.tracks) {
           if (track.type !== "audio" || track.muted || track.hidden) continue;
@@ -134,6 +141,7 @@ export function PreviewStage() {
             timeSec: sourceTimeForClip(clip, head) / 1000,
             speed: clip.speed,
             volume: Math.min(1, Math.max(0, clip.volume * audioGainAt(clip, head - clip.startInTimeline))),
+            clip,
           });
         }
       }
@@ -141,7 +149,10 @@ export function PreviewStage() {
         const active = activeBySource.get(sourceId);
         if (active) {
           el.playbackRate = Math.min(4, Math.max(0.25, active.speed));
-          el.volume = active.volume;
+          // roteia pelo grafo (efeitos); só cai no volume direto se indisponível
+          if (!audioGraphRef.current?.apply(el, active.clip, active.volume)) {
+            el.volume = active.volume;
+          }
           if (Math.abs(el.currentTime - active.timeSec) > 0.25) el.currentTime = Math.max(0, active.timeSec);
           if (el.paused) void el.play().catch(() => undefined);
         } else if (!el.paused) {
@@ -257,6 +268,8 @@ export function PreviewStage() {
       if (starts.length === 0) return;
       setPlayhead(Math.min(...starts));
     }
+    // política de autoplay: o contexto só sai de "suspended" num gesto do usuário
+    audioGraphRef.current?.resume();
     setPlaying(true);
   }, [setPlayhead]);
 
@@ -278,7 +291,9 @@ export function PreviewStage() {
       currentClipId = clip.id;
       // som original do vídeo toca junto da música — respeitando mudo/volume
       el.muted = primaryTrack!.muted || clip.volume <= 0;
-      el.volume = Math.min(1, Math.max(0, clip.volume));
+      if (!audioGraphRef.current?.apply(el, clip, clip.volume)) {
+        el.volume = Math.min(1, Math.max(0, clip.volume));
+      }
       el.playbackRate = Math.min(4, Math.max(0.25, clip.speed));
       const target = sourceTimeForClip(clip, useVideoEditor.getState().playheadMs) / 1000;
       if (Math.abs(el.currentTime - target) > 0.08) await seekVideo(el, target);
@@ -304,7 +319,8 @@ export function PreviewStage() {
           const newHead = clip.startInTimeline + (el.currentTime * 1000 - clip.trimIn) / clip.speed;
           setPlayhead(newHead >= clipEndMs(clip) ? clipEndMs(clip) : newHead);
           // fades de áudio do som do próprio vídeo
-          el.volume = Math.min(1, Math.max(0, clip.volume * audioGainAt(clip, newHead - clip.startInTimeline)));
+          const vol = Math.min(1, Math.max(0, clip.volume * audioGainAt(clip, newHead - clip.startInTimeline)));
+          if (!audioGraphRef.current?.apply(el, clip, vol)) el.volume = vol;
         }
       } else if (audioActive) {
         // sem vídeo sob o playhead, mas há música tocando → relógio de parede
